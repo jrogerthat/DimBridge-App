@@ -17,7 +17,7 @@ You can start the backend from the frontend folder:
 
 ## Flask backend
 
-There is a proxy in frontend/package.json that pecifies path for Flask server `"http://localhost:5000"`.
+There is a proxy in frontend/package.json for path for Flask server `"http://localhost:5000"`.
 This means we can use relative paths to hit flask endpoints. (`"/profile"` instead of `"http://localhost:5000/profile"`).
 
 We are using axios for get/post between backend and frontend.
