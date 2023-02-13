@@ -1,5 +1,7 @@
 # Dimbridge App
 
+Referenced this for setting up: [Dev Article](https://dev.to/nagatodev/how-to-connect-flask-to-reactjs-1k8i)
+
 ## React frontend
 
 ### Getting started:
@@ -20,7 +22,7 @@ You can start the backend from the frontend folder:
 There is a proxy in frontend/package.json for path for Flask server `"http://localhost:5000"`.
 This means we can use relative paths to hit flask endpoints. (`"/profile"` instead of `"http://localhost:5000/profile"`).
 
-We are using axios for get/post between backend and frontend.
+We are using axios.js for making async requests on the frontend.
 
 ### Getting started:
 `cd backend`
