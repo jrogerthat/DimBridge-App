@@ -1,57 +1,33 @@
 import { useState } from 'react'
-import axios from "axios";
-import logo from './logo.svg';
 import './App.css';
+import AppBar from '@mui/material/AppBar';
+import Typography from '@mui/material/Typography';
+import LeftSidebar from './components/leftSidebar';
+import MainWrap from './components/mainWrap';
 
 function App() {
 
    // new line start
-  const [profileData, setProfileData] = useState(null)
+  const [profileData, setProfileData] = useState(null);
+  const [predEditMode, setPredEditMode] = useState(true);
 
-  function getData() {
-    axios({
-      method: "GET",
-      url:"/profile",
-    })
-    .then((response) => {
-      const res =response.data
-      setProfileData(({
-        profile_name: res.name,
-        about_me: res.about}))
-    }).catch((error) => {
-      if (error.response) {
-        console.log(error.response)
-        console.log(error.response.status)
-        console.log(error.response.headers)
-        }
-    })}
-    //end of new line 
-
+ 
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-
-        {/* new line start*/}
-        <p>To get your profile details: </p><button onClick={getData}>Click me</button>
-        {profileData && <div>
-              <p>Profile name: {profileData.profile_name}</p>
-              <p>About me: {profileData.about_me}</p>
-            </div>
-        }
-         {/* end of new line */}
-      </header>
+      {/* <div className="header">PIXAL</div> */}
+      <AppBar position="static" sx = {{ background: 'white', padding: "10px"}}>
+        <Typography variant="h6" component="div" sx={{ flexGrow: 1, color: 'GrayText' }}>DIMBRIDGE</Typography>
+      </AppBar>
+      <div className="main-wrapper">
+        <LeftSidebar></LeftSidebar>
+        {/* {predEditMode ? (
+          <PredicateExplore/>
+        ): (
+          
+        )} */}
+        <MainWrap/>
+      </div>
+    
     </div>
   );
 }
