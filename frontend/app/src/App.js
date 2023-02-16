@@ -11,7 +11,6 @@ function App() {
   const [profileData, setProfileData] = useState(null);
   const [predEditMode, setPredEditMode] = useState(true);
 
- 
   return (
     <div className="App">
       {/* <div className="header">PIXAL</div> */}

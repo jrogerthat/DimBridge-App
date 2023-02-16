@@ -20,7 +20,6 @@ body {
   align-items: stretch;
   height: calc(100% - 50px);
   background-color: blue;
-
 }
 
 .App-link {
@@ -83,7 +82,6 @@ body {
 }
 
 .r-top {
-
   background-color: yellow;
   grid-column: 3/6;
   grid-row: 1;
@@ -96,7 +94,6 @@ body {
 }
 
 .r-bottom {
-
   background-color: green;
   grid-column: 3/6;
   grid-row: 2;
