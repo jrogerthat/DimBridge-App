@@ -1,0 +1,4 @@
+pandas
+scikit-learn
+Flask
+git+https://github.com/bmontambault/predicate_induction.git
