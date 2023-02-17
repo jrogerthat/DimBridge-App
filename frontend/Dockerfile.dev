@@ -2,8 +2,6 @@ FROM node:18-alpine
 
 WORKDIR /usr
 
-RUN mkdir -p node_modules
-
 ENV PATH /usr/node_modules/.bin:$PATH
 
 COPY app/package.json ./
@@ -11,8 +9,6 @@ COPY app/package.json ./
 COPY app/package-lock.json ./
 
 RUN npm ci
-
-RUN npm install react-scripts@5.0.1 -g
 
 WORKDIR /usr/app
 
