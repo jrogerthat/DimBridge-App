@@ -3,7 +3,7 @@ import pandas as pd
 from itertools import combinations
 from sklearn.manifold import TSNE
 
-from predicates import PredicateInduction, Anomaly, infer_dtypes, encode_data, get_predicates_from_data
+from predicates import PredicateInduction, Anomaly, infer_dtypes, encode, data_to_predicates
 
 api = Flask(__name__)
 projection_algorithms = {'tsne': TSNE(n_components=2).fit_transform}
@@ -27,7 +27,7 @@ def data(path=None, projection_algorithm=None):
 
     data = pd.read_csv(kwargs['path']) #dataframe containing original data
     dtypes = infer_dtypes(data)
-    encoded_data = encode_data(data, dtypes) #one-hot encode numeric columns, date columns to numeric
+    encoded_data = encode(data, dtypes) #one-hot encode numeric columns, date columns to numeric
 
     projection = projection_algorithms[kwargs['projection_algorithm']](encoded_data) #dataframe containing projection data
     session['data']['data'] = data
@@ -61,7 +61,7 @@ def predicate(selected_ids=None, reference_ids=None):
     df = session['data']['data'][session['data']['data'].index.isin(ids)] # only use only selected and reference data
 
     # setup predicate induction algorithm
-    attribute_predicates=session['predicates'].get('attribute_predicates', get_predicates_from_data(df.loc[reference_ids], session['data']['dtypes'], df))
+    attribute_predicates=session['predicates'].get('attribute_predicates', data_to_predicates(df.loc[reference_ids], session['data']['dtypes'], df))
     pi = PredicateInduction(
         target=pd.Series(selected_ids),
         score_func=Anomaly(dtype='binary'),
