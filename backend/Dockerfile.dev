@@ -1,0 +1,12 @@
+FROM rpy2/base-ubuntu:vRELEASE_3_5_6-22.04
+
+WORKDIR /usr/app
+
+RUN R -e "install.packages('BayesFactor',dependencies=TRUE, repos='http://cran.rstudio.com/')"
+
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+RUN rm requirements.txt
+
