@@ -3,7 +3,7 @@ import pandas as pd
 from itertools import combinations
 from sklearn.manifold import TSNE
 
-from predicate_induction import PredicateInduction, Anomaly, infer_dtypes, encode_data, get_predicates_from_data
+from predicates import PredicateInduction, Anomaly, infer_dtypes, encode_data, get_predicates_from_data
 
 api = Flask(__name__)
 projection_algorithms = {'tsne': TSNE(n_components=2).fit_transform}
