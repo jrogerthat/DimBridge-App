@@ -16,7 +16,7 @@ $\color{red}{Select: \{x, y\} \rightarrow D_{s}}$
 Selecting a set of points in projection space returns the corresponding points in data space.
 ___
 
-$\color{red}{SelectReference: D_{s} ~\rightarrow D_{r}}$
+$\color{red}{SelectReference: D_{s} \rightarrow D_{r}}$
 
 $\color{red}{SelectReference: \{x, y\} \rightarrow D_{r}}$
 

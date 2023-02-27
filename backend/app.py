@@ -63,7 +63,7 @@ def predicate(selected_ids=None, reference_ids=None):
     # setup predicate induction algorithm
     attribute_predicates=session['predicates'].get('attribute_predicates', get_predicates_from_data(df.loc[reference_ids], session['data']['dtypes'], df))
     pi = PredicateInduction(
-        target=selected_ids,
+        target=pd.Series(selected_ids),
         score_func=Anomaly(dtype='binary'),
         attribute_predicates=attribute_predicates,
         frontier=session['predicates'].get('frontier'),
