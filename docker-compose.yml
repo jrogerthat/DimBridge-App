@@ -1,13 +1,13 @@
 version: '3.8'
 
 services:
-#  backend:
-#  build:
-#      context: ./backend
-#      dockerfile: Dockerfile.dev
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
-#    depends_on:
-#      - backend
+    depends_on:
+      - backend

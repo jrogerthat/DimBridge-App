@@ -1,3 +1,6 @@
+from os import environ
+from pathlib import Path
+
 from flask import Flask, request, session
 import pandas as pd
 from itertools import combinations
@@ -5,37 +8,38 @@ from sklearn.manifold import TSNE
 
 from predicates import PredicateInduction, Anomaly, infer_dtypes, encode
 
+DATA_FOLDER: Path = Path(Path(__file__).parent, 'data')
+
 api = Flask(__name__)
+api.config['SECRET_KEY'] = environ.get('SECRET_KEY')
 projection_algorithms = {'tsne': TSNE(n_components=2).fit_transform}
+datasets = {'redwine': 'winequality-red.csv'}
+
 
 @api.route('/data')
-def data(path=None, projection_algorithm=None):
+def data(dataset=None, projection_algorithm=None):
     """
     Load data given a path to a csv, infer dtypes, and transform the data given a projection algorithm. Returns projection data.
-
-    :param path: Path to the csv to be loaded as data.
-    :type path: str
+    :param dataset: The name of the dataset.
+    :type dataset: str
     :param projection_algorithm: Name of the projection algorithm to be used as it appears in projection_algorithms.
     :type projection_algorithm: str
     :return: Projection data.
     :rtype: dict
     """
 
-    kwargs = request.get_json(force=True)
-    path = kwargs.get('path', path)
-    projection_algorithm = kwargs.get('projection_algorithm', projection_algorithm)
+    dataset = request.args.get('dataset')
+    projection_algorithm = request.args.get('projection_algorithm')
 
-    data = pd.read_csv(kwargs['path']) #dataframe containing original data
-    dtypes = infer_dtypes(data)
-    encoded_data = encode(data, dtypes) #one-hot encode numeric columns, date columns to numeric
+    features = pd.read_csv(str(Path(DATA_FOLDER, datasets[dataset]))) #dataframe containing original data
+    dtypes = infer_dtypes(features)
+    encoded_data = encode(features, dtypes) #one-hot encode numeric columns, date columns to numeric
 
-    projection = projection_algorithms[kwargs['projection_algorithm']](encoded_data) #dataframe containing projection data
-    session['data']['data'] = data
-    session['data']['dtypes'] = dtypes
-    session['data']['projection'] = projection
+    projection = projection_algorithms[projection_algorithm](encoded_data).tolist() #2d list containing projection data
+    session['data'] = {'data': features.to_dict(), 'dtypes': dtypes, 'projection': projection}
 
     response_body = {
-        "projection": projection.to_dict('records')
+        "projection": projection
     }
     return response_body
 

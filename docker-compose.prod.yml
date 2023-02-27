@@ -11,5 +11,5 @@ services:
     build:
       dockerfile: Dockerfile.prod
     ports:
-      - 3000:80
+      - 80:80
   
