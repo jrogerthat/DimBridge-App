@@ -1,12 +1,12 @@
 version: '3.8'
 
 services:
-#  backend:
-#    command: flask run
-#    ports:
-#      - 5000:5000
-#    volumes:
-#      - './backend/app:/usr/app'
+  backend:
+    command: flask run
+    ports:
+      - 5000:5000
+    volumes:
+      - './backend/app:/usr/app'
   frontend:
     command: npm start
     ports:

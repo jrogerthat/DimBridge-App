@@ -1,15 +1,15 @@
 version: '3.8'
 
 services:
-#  backend:
-#    build:
-#      dockerfile: Dockerfile.prod
-#    command: gunicorn --bind 0.0.0.0:5000 app:application
-#    expose:
-#      - 5000
+  backend:
+    build:
+      dockerfile: Dockerfile.prod
+    command: gunicorn --bind 0.0.0.0:5000 app:api
+    expose:
+      - 5000
   frontend:
     build:
       dockerfile: Dockerfile.prod
     ports:
-      - 3000:80
+      - 80:80
   
