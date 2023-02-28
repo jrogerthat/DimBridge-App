@@ -16,7 +16,7 @@ projection_algorithms = {'tsne': TSNE(n_components=2).fit_transform}
 datasets = {'redwine': 'winequality-red.csv'}
 
 
-@api.route('/data')
+@api.route('/api/data')
 def data(dataset=None, projection_algorithm=None):
     """
     Load data given a path to a csv, infer dtypes, and transform the data given a projection algorithm. Returns projection data.
@@ -36,14 +36,13 @@ def data(dataset=None, projection_algorithm=None):
     encoded_data = encode(features, dtypes) #one-hot encode numeric columns, date columns to numeric
 
     projection = projection_algorithms[projection_algorithm](encoded_data).tolist() #2d list containing projection data
-    session['data'] = {'data': features.to_dict(), 'dtypes': dtypes, 'projection': projection}
 
     response_body = {
         "projection": projection
     }
     return response_body
 
-@api.route('/predicate')
+@api.route('/api/predicate')
 def predicate(selected_ids=None, reference_ids=None):
     """
     Find the next best predicate given a set of selected ids and reference ids. The state of the predicate induction algorithm is stored as session data and will
@@ -105,7 +104,7 @@ def predicate(selected_ids=None, reference_ids=None):
     }
     return response_body
 
-@api.route('/explanations')
+@api.route('/api/explanations')
 def explanations(predicate_id=None, num_bins=10):
     """
     Returns data needed to plot all explanations for a given predicate.
