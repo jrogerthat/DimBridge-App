@@ -16,6 +16,13 @@ projection_algorithms = {'tsne': TSNE(n_components=2).fit_transform}
 datasets = {'redwine': 'winequality-red.csv'}
 
 
+@api.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+
+    return response
+
+
 @api.route('/api/data')
 def data(dataset=None, projection_algorithm=None):
     """
@@ -36,11 +43,14 @@ def data(dataset=None, projection_algorithm=None):
     encoded_data = encode(features, dtypes) #one-hot encode numeric columns, date columns to numeric
 
     projection = projection_algorithms[projection_algorithm](encoded_data).tolist() #2d list containing projection data
+    features = features.to_dict(orient='records')
+    for i in range(len(features)):
+        f = features[i]
+        f['id'] = i
+        f['x'] = projection[i][0]
+        f['y'] = projection[i][1]
 
-    response_body = {
-        "projection": projection
-    }
-    return response_body
+    return features
 
 @api.route('/api/predicate')
 def predicate(selected_ids=None, reference_ids=None):

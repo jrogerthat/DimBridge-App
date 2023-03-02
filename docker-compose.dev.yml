@@ -2,13 +2,18 @@ version: '3.8'
 
 services:
   backend:
+    build:
+      dockerfile: Dockerfile.dev
     command: flask run
     ports:
       - 5000:5000
     volumes:
       - './backend/app:/usr/app'
   frontend:
+    build:
+      dockerfile: Dockerfile.dev
     command: npm start
+    env_file: frontend/app/.env.development
     ports:
       - 3000:3000
     volumes:
