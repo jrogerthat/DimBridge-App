@@ -18,6 +18,9 @@ const FlexBox = styled(Box)(({theme}) => {
 
 
 function App() {
+    // This grabs the data
+    // I don't want to write a large explanation -- you can assume that at the moment
+    // it won't refetch during the lifetime of the app
     const {data, isLoading, isSuccess} = useGetDataQuery(['redwine', 'tsne']);
 
     return (

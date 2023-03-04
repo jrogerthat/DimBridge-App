@@ -2,7 +2,9 @@ import {useCallback, useLayoutEffect, useState} from 'react'
 
 import useEventListener from './useEventListener'
 
-
+/**
+ * https://usehooks-ts.com/react-hook/use-element-size
+ */
 function useElementSize() {
     // Mutable values like 'ref.current' aren't valid dependencies
     // because mutating them doesn't re-render the component.

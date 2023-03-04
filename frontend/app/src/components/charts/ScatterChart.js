@@ -2,7 +2,8 @@ import {useEffect, useRef} from "react";
 import * as d3 from 'd3';
 import {isNil} from "../../utils";
 import {withDimensions} from "../../wrappers/dimensions";
-
+import {useDispatch} from "react-redux";
+import {addClause} from "../../slices/clauseSlice";
 import {getChartBounds, getExtrema} from "./common";
 
 // How far from the axes do we start drawing points
@@ -17,6 +18,7 @@ const appendGroups = (selection) => {
     selection.append('g').attr('id', 'circlesG')
     selection.append('g').attr('id', 'xAxisG');
     selection.append('g').attr('id', 'yAxisG');
+    selection.append('g').attr('id', 'brush');
 }
 
 /**
@@ -52,7 +54,7 @@ const createScatterScales = ({minX, maxX, minY, maxY}, {startX, endX, startY, en
  * @param rootG The rootG to find the axis groups on.
  * @param xScale The scale for the X.
  * @param yScale The scale for the Y.
- * @param startX How fr from the left to start drawing the Y axis in pixel space.
+ * @param startX How far from the left to start drawing the Y axis in pixel space.
  * @param startY How far from the bottom to start drawing the X axis in pixel space
  */
 const callAxis = (rootG,
@@ -114,10 +116,12 @@ const joinCircles = (rootG,
  * A ScatterPlot chart.
  * @param dimensions The dimensions of the chart. Consists of width and height. Cannot be None.
  * @param data The data to display. Consists of xy coordinates and...
+ * @param column_names {xColumn, yColumn} The name of the columns being displayed in this ScatterChart.
  * @returns {JSX.Element}
  */
-export const ScatterChart = ({dimensions, data}) => {
+export const ScatterChart = ({dimensions, data, column_names}) => {
     const scatterRef = useRef();
+    const dispatch = useDispatch();
 
     // Initial setup -- this runs once.
     useEffect(() => {
@@ -135,10 +139,27 @@ export const ScatterChart = ({dimensions, data}) => {
             const scatterBounds = getChartBounds(dimensions);
             const extrema = getExtrema(data);
             const scales = createScatterScales(extrema, scatterBounds);
-            callAxis(rootG, scales, {startX: scatterBounds.startX, startY: scatterBounds.startY})
-            joinCircles(rootG, scales, data)
+            callAxis(rootG, scales, {startX: scatterBounds.startX, startY: scatterBounds.startY});
+            joinCircles(rootG, scales, data);
+
+            /**
+             * On brush end add a clause to the current predicate.
+             * @param e
+             */
+            const onBrushEnd = (e) => {
+                if (!isNil(e) && !isNil(e.selection)) {
+                    const [xPixelSpace] = e.selection;
+                    const xDataSpace = xPixelSpace.map(scales.xScale.invert);
+                    const xClause = {'column': column_names.xColumn, 'min': xDataSpace[0], 'max': xDataSpace[1]}
+                    dispatch(addClause(xClause));
+                }
+            }
+
+            rootG
+                .select('#brush')
+                .call(d3.brush().on('end', onBrushEnd));
         }
-    }, [data, dimensions]);
+    }, [data, column_names, dispatch, dimensions]);
 
     return (
         <svg ref={scatterRef} width={dimensions.width} height={dimensions.height}/>

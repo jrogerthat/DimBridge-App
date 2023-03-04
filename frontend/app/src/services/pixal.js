@@ -3,7 +3,9 @@ import {env} from "../env";
 
 const BASE_URL = env("REACT_APP_BACKEND_API");
 
-// Define a service using a base URL and expected endpoints
+/**
+ * https://redux-toolkit.js.org/rtk-query/api/createApi
+ */
 export const pixalApi = createApi({
     reducerPath: 'pixalApi',
     baseQuery: fetchBaseQuery({baseUrl: BASE_URL}),
