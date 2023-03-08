@@ -37,7 +37,7 @@ function App() {
                     <PredicatePanel/>
                 </FlexBox>
                 <FlexBox>
-                    <DataPanel data={data}/>
+                    {/* <DataPanel data={data}/> */}
                 </FlexBox>
             </Box>}
         </Box>

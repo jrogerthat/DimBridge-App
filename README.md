@@ -2,6 +2,11 @@
 
 Referenced this for setting up: [Dev Article](https://dev.to/nagatodev/how-to-connect-flask-to-reactjs-1k8i)
 
+
+## Docker
+
+`docker-compose -f docker-compose.yml -f docker-compose.dev.yml up`
+
 ## React frontend
 
 ### Getting started:
