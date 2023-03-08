@@ -1,35 +1,31 @@
 # Dimbridge App
 
+## If using docker to run it:
+
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+Its possible you'll need sudo depending on how you've installed Docker. Additionally, I think newer versions of docker lost the hyphen in the actual command, so it might be something along the lines of:
+
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+## Non Docker
+
 Referenced this for setting up: [Dev Article](https://dev.to/nagatodev/how-to-connect-flask-to-reactjs-1k8i)
 
-## React frontend
+### React frontend
 
-### Getting started:
+#### Getting started:
 
 Dev Server:
 
-`cd frontend`
+`cd frontend/app`
 `npm run start`
 
-You can start the backend from the frontend folder:
+### Flask backend
 
-`cd frontend`
-`npm run start-backend`
-`"http://localhost:3000"`
-
-## Flask backend
-
-There is a proxy in frontend/package.json for path for Flask server `"http://localhost:5000"`.
-This means we can use relative paths to hit flask endpoints. (`"/profile"` instead of `"http://localhost:5000/profile"`).
-
-We are using axios.js for making async requests on the frontend.
-
-### Getting started:
-`cd backend`
-`source env/bin/activate`
+#### Getting started:
+`cd backend/app`
 `run flask`
-OR
-`env/bin/flask run`
 
 You can see it:
 `"http://localhost:5000"`

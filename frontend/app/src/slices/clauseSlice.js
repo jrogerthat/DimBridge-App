@@ -18,7 +18,7 @@ const clauseSlice = createSlice({
     name: 'clause',
     initialState: clauseAdapter.getInitialState(),
     reducers: {
-        addClause: clauseAdapter.addOne,
+        setClause: clauseAdapter.setOne,
         removeClause: clauseAdapter.removeOne,
     },
     extraReducers: (builder) => {
@@ -32,6 +32,6 @@ export const {
     selectAll: selectAllClauses,
     selectById: selectClauseById
 } = clauseAdapter.getSelectors(state => state.clause);
-export const {addClause, removeClause} = clauseSlice.actions;
+export const {setClause, removeClause} = clauseSlice.actions;
 
 export default clauseSlice.reducer;
