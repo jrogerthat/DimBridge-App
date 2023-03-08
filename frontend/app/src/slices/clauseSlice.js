@@ -28,7 +28,10 @@ const clauseSlice = createSlice({
             })
     },
 })
-export const {selectAll: selectAllClauses} = clauseAdapter.getSelectors(state => state.clause);
+export const {
+    selectAll: selectAllClauses,
+    selectById: selectClauseById
+} = clauseAdapter.getSelectors(state => state.clause);
 export const {addClause, removeClause} = clauseSlice.actions;
 
 export default clauseSlice.reducer;

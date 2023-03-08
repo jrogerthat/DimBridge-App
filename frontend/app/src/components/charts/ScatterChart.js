@@ -3,7 +3,7 @@ import * as d3 from 'd3';
 import {isNil} from "../../utils";
 import {withDimensions} from "../../wrappers/dimensions";
 import {useDispatch} from "react-redux";
-import {addClause} from "../../slices/clauseSlice";
+import {addClause, removeClause} from "../../slices/clauseSlice";
 import {getChartBounds, getExtrema} from "./common";
 
 // How far from the axes do we start drawing points
@@ -147,11 +147,15 @@ export const ScatterChart = ({dimensions, data, columnNames}) => {
              * @param e The event.
              */
             const onBrushEnd = (e) => {
-                if (!isNil(e) && !isNil(e.selection)) {
-                    const xPixelSpace = e.selection;
-                    const xDataSpace = xPixelSpace.map(scales.xScale.invert);
-                    const xClause = {'column': columnNames.xColumn, 'min': xDataSpace[0], 'max': xDataSpace[1]}
-                    dispatch(addClause(xClause));
+                if (!isNil(e)) {
+                    if (!isNil(e.selection)) {
+                        const xPixelSpace = e.selection;
+                        const xDataSpace = xPixelSpace.map(scales.xScale.invert);
+                        const xClause = {'column': columnNames.xColumn, 'min': xDataSpace[0], 'max': xDataSpace[1]}
+                        dispatch(addClause(xClause));
+                    } else {
+                        dispatch(removeClause(columnNames.xColumn));
+                    }
                 }
             }
 
@@ -159,6 +163,7 @@ export const ScatterChart = ({dimensions, data, columnNames}) => {
                 .select('#brush')
                 .call(d3.brushX().on('end', onBrushEnd));
         }
+        return () => dispatch(removeClause(columnNames.xColumn));
     }, [data, columnNames, dispatch, dimensions]);
 
     return (
