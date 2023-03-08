@@ -1,6 +1,7 @@
 import {configureStore} from '@reduxjs/toolkit';
 import {pixalApi} from "../services/pixal";
-import annotationReducer from '../slices/clauseSlice';
+import clauseReducer from '../slices/clauseSlice';
+import predicateReducer from '../slices/predicateSlice';
 
 /**
  * https://redux-toolkit.js.org/api/configureStore
@@ -8,7 +9,8 @@ import annotationReducer from '../slices/clauseSlice';
 export const store = configureStore({
     reducer: {
         [pixalApi.reducerPath]: pixalApi.reducer,
-        clause: annotationReducer,
+        clause: clauseReducer,
+        predicate: predicateReducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware().concat(pixalApi.middleware),

@@ -1,4 +1,5 @@
 import {createEntityAdapter, createSlice,} from '@reduxjs/toolkit'
+import {addManualPredicate} from "./predicateSlice";
 
 /**
  * https://redux-toolkit.js.org/api/createEntityAdapter
@@ -19,6 +20,12 @@ const clauseSlice = createSlice({
     reducers: {
         addClause: clauseAdapter.addOne,
         removeClause: clauseAdapter.removeOne,
+    },
+    extraReducers: (builder) => {
+        builder
+            .addCase(addManualPredicate, (state, action) => {
+                clauseAdapter.removeAll(state);
+            })
     },
 })
 export const {selectAll: selectAllClauses} = clauseAdapter.getSelectors(state => state.clause);
