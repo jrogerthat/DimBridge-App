@@ -116,10 +116,10 @@ const joinCircles = (rootG,
  * A ScatterPlot chart.
  * @param dimensions The dimensions of the chart. Consists of width and height. Cannot be None.
  * @param data The data to display. Consists of xy coordinates and...
- * @param column_names {xColumn, yColumn} The name of the columns being displayed in this ScatterChart.
+ * @param columnNames The name of the columns being displayed in this ScatterChart.
  * @returns {JSX.Element}
  */
-export const ScatterChart = ({dimensions, data, column_names}) => {
+export const ScatterChart = ({dimensions, data, columnNames}) => {
     const scatterRef = useRef();
     const dispatch = useDispatch();
 
@@ -144,22 +144,22 @@ export const ScatterChart = ({dimensions, data, column_names}) => {
 
             /**
              * On brush end add a clause to the current predicate.
-             * @param e
+             * @param e The event.
              */
             const onBrushEnd = (e) => {
                 if (!isNil(e) && !isNil(e.selection)) {
-                    const [xPixelSpace] = e.selection;
+                    const xPixelSpace = e.selection;
                     const xDataSpace = xPixelSpace.map(scales.xScale.invert);
-                    const xClause = {'column': column_names.xColumn, 'min': xDataSpace[0], 'max': xDataSpace[1]}
+                    const xClause = {'column': columnNames.xColumn, 'min': xDataSpace[0], 'max': xDataSpace[1]}
                     dispatch(addClause(xClause));
                 }
             }
 
             rootG
                 .select('#brush')
-                .call(d3.brush().on('end', onBrushEnd));
+                .call(d3.brushX().on('end', onBrushEnd));
         }
-    }, [data, column_names, dispatch, dimensions]);
+    }, [data, columnNames, dispatch, dimensions]);
 
     return (
         <svg ref={scatterRef} width={dimensions.width} height={dimensions.height}/>
