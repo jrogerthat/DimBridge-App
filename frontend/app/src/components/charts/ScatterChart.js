@@ -1,9 +1,9 @@
-import {useEffect, useRef} from "react";
+import {useEffect, useRef, useState} from "react";
 import * as d3 from 'd3';
 import {isNil} from "../../utils";
 import {withDimensions} from "../../wrappers/dimensions";
-import {useDispatch} from "react-redux";
-import {addClause, removeClause} from "../../slices/clauseSlice";
+import {useDispatch, useSelector} from "react-redux";
+import {removeClause, selectClauseById, setClause} from "../../slices/clauseSlice";
 import {getChartBounds, getExtrema} from "./common";
 
 // How far from the axes do we start drawing points
@@ -122,6 +122,8 @@ const joinCircles = (rootG,
 export const ScatterChart = ({dimensions, data, columnNames}) => {
     const scatterRef = useRef();
     const dispatch = useDispatch();
+    const [brushState, setBrushState] = useState();
+    const clause = useSelector((state) => selectClauseById(state, columnNames.xColumn));
 
     // Initial setup -- this runs once.
     useEffect(() => {
@@ -147,24 +149,50 @@ export const ScatterChart = ({dimensions, data, columnNames}) => {
              * @param e The event.
              */
             const onBrushEnd = (e) => {
-                if (!isNil(e)) {
+                if (!isNil(e) && !isNil(e.sourceEvent)) {
                     if (!isNil(e.selection)) {
+                        // If there is a valid selection add its clause.
                         const xPixelSpace = e.selection;
                         const xDataSpace = xPixelSpace.map(scales.xScale.invert);
                         const xClause = {'column': columnNames.xColumn, 'min': xDataSpace[0], 'max': xDataSpace[1]}
-                        dispatch(addClause(xClause));
+                        dispatch(setClause(xClause));
                     } else {
+                        // Otherwise remove any clause associated with this column.
                         dispatch(removeClause(columnNames.xColumn));
                     }
                 }
             }
 
+            const brush = d3.brushX().on('end', onBrushEnd);
+
             rootG
                 .select('#brush')
-                .call(d3.brushX().on('end', onBrushEnd));
+                .call(brush);
+
+            setBrushState((prevState) => {
+                return {brush: brush, scale: scales.xScale}
+            })
         }
-        return () => dispatch(removeClause(columnNames.xColumn));
-    }, [data, columnNames, dispatch, dimensions]);
+        // If chart is unmounting remove its clause.
+    }, [data, dimensions, columnNames.xColumn, dispatch]);
+
+    // Move or clear the brush when the clause related to the column of the chart changes
+    useEffect(() => {
+        if (!isNil(scatterRef.current) && !isNil(brushState)) {
+            const rootG = d3.select(scatterRef.current);
+            const brushG = rootG.select('#brush');
+            const {brush, scale} = brushState;
+
+            if (!isNil(clause)) {
+                rootG
+                    .select('#brush')
+                    .call(brush.move, [clause.min, clause.max].map(scale));
+            } else {
+                brushG.call(brush.clear)
+            }
+
+        }
+    }, [clause, brushState]);
 
     return (
         <svg ref={scatterRef} width={dimensions.width} height={dimensions.height}/>
