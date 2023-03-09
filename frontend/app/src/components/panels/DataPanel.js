@@ -7,7 +7,7 @@ import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import {useDispatch, useSelector} from "react-redux";
-import {selectAllClauses} from "../../slices/clauseSlice";
+import {removeClause, selectAllClauses} from "../../slices/clauseSlice";
 import {addManualPredicate} from "../../slices/predicateSlice";
 import Typography from '@mui/material/Typography';
 
@@ -94,6 +94,7 @@ const ControlSection = ({data, currentlyDisplayedColumns, setCurrentlyDisplayedC
                 if (isSelectedColumnDisplayed) {
                     const temp = new Set(currentlyDisplayedColumns)
                     temp.delete(selectedColumn)
+                    dispatch(removeClause(selectedColumn));
                     setCurrentlyDisplayedColumns(temp)
                 } else {
                     const temp = currentlyDisplayedColumns.size > 0 ? new Set(currentlyDisplayedColumns).add(selectedColumn) : new Set([selectedColumn]);
