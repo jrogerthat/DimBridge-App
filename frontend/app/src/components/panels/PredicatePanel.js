@@ -13,8 +13,8 @@ const predicateDict = {
  * @returns {JSX.Element}
  */
 export const PredicatePanel = () => {
-    // const predicates = useSelector(selectAllClauses);
-    // console.log('predicates', predicates);
+    const predicatesTest = useSelector(selectAllClauses);
+    console.log('predicates', predicatesTest);
     let predicates = Object.entries(predicateDict);
     
     return (
@@ -26,7 +26,7 @@ export const PredicatePanel = () => {
                         className="predicate_nav" 
                         key={d[0]}
                         style={{
-                            backgroundColor:'#f4efefe0',
+                            backgroundColor:'#f0efef',
                             padding:5,
                             borderRadius:5,
                             margin:3,
@@ -36,23 +36,27 @@ export const PredicatePanel = () => {
                         >
                         <div style={{width:'70%'}}>
                             <div>{`Predicate Score: `}<span style={{fontWeight:800}}>{d[1].score}</span></div>
-                        {
-                        Object.entries(d[1].attribute_values).map(f => {
-                            console.log(f)
-                            return(
-                                <div 
-                                key={f[0]}
-                                style={{
-                                    borderBottom: "1px solid gray"
-                                }}
-                                >
-                                    <span>{`${f[0]}: `}</span>{f[1].join(' - ')}
-                                </div>
-                                )
-                            })
-                        }
+                            <div className='clause_wrap' style={{marginTop:10}}>
+                            {
+                            Object.entries(d[1].attribute_values).map(f => {
+                                console.log(f)
+                                return(
+                                    <div 
+                                    key={f[0]}
+                                    style={{
+                                        borderTop: "1px solid gray",
+                                        backgroundColor: "#dfdfdf",
+                                        padding: 3
+                                    }}
+                                    >
+                                        <span>{`${f[0]}: `}</span>{f[1].join(' - ')}
+                                    </div>
+                                    )
+                                })
+                            }
                         </div>
-                        <div style={{width: '30%', backgroundColor:'red'}}>
+                        </div>
+                        <div style={{width: '30%', backgroundColor:'white'}}>
 
                         </div>
                         
