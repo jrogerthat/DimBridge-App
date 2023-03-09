@@ -1,3 +1,5 @@
+import uuid
+
 from os import environ
 from pathlib import Path
 
@@ -50,6 +52,16 @@ def data(dataset=None, projection_algorithm=None):
         f['y'] = projection[i][1]
 
     return features
+
+
+@api.route('/api/predicates')
+def predicate(dataset=None, projection_algorithm=None, selected_ids=None):
+    dataset = request.args.get('dataset')
+    projection_algorithm = request.args.get('projection_algorithm')
+    selected_ids = [int(x) for x in request.args.get('selected_ids').split(',')]
+
+    return [{'id': uuid.uuid4(), 'clauses': [{'column': 'pH', 'min': 3.37, 'max': 3.38}]}]
+
 
 # @api.route('/api/predicate')
 # def predicate(selected_ids=None, reference_ids=None):

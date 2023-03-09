@@ -117,13 +117,12 @@ const joinCircles = (rootG,
  * @param dimensions The dimensions of the chart. Consists of width and height. Cannot be None.
  * @param data The data to display. Consists of xy coordinates and...
  * @param columnNames The name of the columns being displayed in this ScatterChart.
+ * @param children
  * @returns {JSX.Element}
  */
-export const ScatterChart = ({dimensions, data, columnNames}) => {
+export const ScatterChart = ({dimensions, data, columnNames, children}) => {
     const scatterRef = useRef();
-    const dispatch = useDispatch();
-    const [brushState, setBrushState] = useState();
-    const clause = useSelector((state) => selectClauseById(state, columnNames.xColumn));
+    const [scaleState, setScaleState] = useState();
 
     // Initial setup -- this runs once.
     useEffect(() => {
@@ -143,60 +142,176 @@ export const ScatterChart = ({dimensions, data, columnNames}) => {
             const scales = createScatterScales(extrema, scatterBounds);
             callAxis(rootG, scales, {startX: scatterBounds.startX, startY: scatterBounds.startY});
             joinCircles(rootG, scales, data);
-
-            /**
-             * On brush end add a clause to the current predicate.
-             * @param e The event.
-             */
-            const onBrushEnd = (e) => {
-                if (!isNil(e) && !isNil(e.sourceEvent)) {
-                    if (!isNil(e.selection)) {
-                        // If there is a valid selection add its clause.
-                        const xPixelSpace = e.selection;
-                        const xDataSpace = xPixelSpace.map(scales.xScale.invert);
-                        const xClause = {'column': columnNames.xColumn, 'min': xDataSpace[0], 'max': xDataSpace[1]}
-                        dispatch(setClause(xClause));
-                    } else {
-                        // Otherwise remove any clause associated with this column.
-                        dispatch(removeClause(columnNames.xColumn));
-                    }
-                }
-            }
-
-            const brush = d3.brushX().on('end', onBrushEnd);
-
-            rootG
-                .select('#brush')
-                .call(brush);
-
-            setBrushState((prevState) => {
-                return {brush: brush, scale: scales.xScale}
-            })
+            setScaleState(scales);
         }
         // If chart is unmounting remove its clause.
-    }, [data, dimensions, columnNames.xColumn, dispatch]);
-
-    // Move or clear the brush when the clause related to the column of the chart changes
-    useEffect(() => {
-        if (!isNil(scatterRef.current) && !isNil(brushState)) {
-            const rootG = d3.select(scatterRef.current);
-            const brushG = rootG.select('#brush');
-            const {brush, scale} = brushState;
-
-            if (!isNil(clause)) {
-                rootG
-                    .select('#brush')
-                    .call(brush.move, [clause.min, clause.max].map(scale));
-            } else {
-                brushG.call(brush.clear)
-            }
-
-        }
-    }, [clause, brushState]);
+    }, [data, dimensions, setScaleState]);
 
     return (
-        <svg ref={scatterRef} width={dimensions.width} height={dimensions.height}/>
+        <svg ref={scatterRef} width={dimensions.width} height={dimensions.height}>
+            {children && scatterRef.current && scaleState && children(d3.select(scatterRef.current), scaleState, columnNames)}
+        </svg>
     )
 }
 
-export const ResponsiveScatterChart = withDimensions(ScatterChart);
+/**
+ * Brush set up for SPLOM interactions.
+ *
+ * @param rootG The group to find the brushG on.
+ * @param scales The scales necessary for the brush.
+ * @param columnNames The columns/axes of the brush.
+ * @returns {JSX.Element}
+ */
+const SPLOMBrush = ({rootG, scales, columnNames}) => {
+    const dispatch = useDispatch();
+    const [brushState, setBrushState] = useState();
+    const clause = useSelector((state) => selectClauseById(state, columnNames.xColumn));
+
+    // Redraw chart on data or dimension change
+    useEffect(() => {
+        /**
+         * On brush end add a clause to the current predicate.
+         * @param e The event.
+         */
+        const onBrushEnd = (e) => {
+            if (!isNil(e) && !isNil(e.sourceEvent)) {
+                if (!isNil(e.selection)) {
+                    // If there is a valid selection add its clause.
+                    const xPixelSpace = e.selection;
+                    const xDataSpace = xPixelSpace.map(scales.xScale.invert);
+                    const xClause = {'column': columnNames.xColumn, 'min': xDataSpace[0], 'max': xDataSpace[1]}
+                    dispatch(setClause(xClause));
+                } else {
+                    // Otherwise remove any clause associated with this column.
+                    dispatch(removeClause(columnNames.xColumn));
+                }
+            }
+        }
+
+        const brush = d3.brushX().on('end', onBrushEnd);
+
+        rootG
+            .select('#brush')
+            .call(brush);
+
+        setBrushState((prevState) => {
+            return brush
+        })
+    }, [rootG, columnNames.xColumn, dispatch, setBrushState, scales]);
+
+    // Move or clear the brush when the clause related to the column of the chart changes
+    useEffect(() => {
+        if (!isNil(brushState)) {
+            const brushG = rootG.select('#brush');
+
+            if (!isNil(clause)) {
+                brushG.call(brushState.move, [clause.min, clause.max].map(scales.xScale));
+            } else {
+                brushG.call(brushState.clear)
+            }
+        }
+    }, [rootG, clause, brushState, scales]);
+
+    return (
+        <></>
+    )
+}
+
+/**
+ * Brush set up for the projection scatter interactions.
+ *
+ * @param rootG The group to find the brushG on.
+ * @param scales The scales necessary for the brush.
+ * @param columnNames The columns/axes of the brush.
+ * @param setSelectionBounds Sets the bounds of the selection within the projection scatter.
+ * @returns {JSX.Element}
+ */
+const ProjectionBrush = ({rootG, scales, columnNames, setSelectionBounds}) => {
+    const dispatch = useDispatch();
+
+    // Redraw chart on data or dimension change
+    useEffect(() => {
+        /**
+         * On brush end add a clause to the current predicate.
+         * @param e The event.
+         */
+        const onBrushEnd = (e) => {
+            if (!isNil(e) && !isNil(e.sourceEvent)) {
+                if (!isNil(e.selection)) {
+                    // If there is a valid selection add its clause.
+                    const pixelSpace = e.selection;
+
+                    // y min and max should be swapped no?
+                    setSelectionBounds(
+                        {
+                            'x': {
+                                'min': scales.xScale.invert(pixelSpace[0][0]),
+                                'max': scales.xScale.invert(pixelSpace[1][0])
+                            },
+                            'y': {
+                                'min': scales.yScale.invert(pixelSpace[1][1]),
+                                'max': scales.yScale.invert(pixelSpace[0][1])
+                            }
+                        });
+                } else {
+                    setSelectionBounds(null);
+                }
+            }
+        }
+
+        const brush = d3.brush().on('end', onBrushEnd);
+
+        rootG
+            .select('#brush')
+            .call(brush);
+
+    }, [rootG, columnNames, dispatch, scales, setSelectionBounds]);
+
+    return (
+        <></>
+    )
+}
+
+// I have no idea how to do nested d3 things in a coherent way..
+// Apologies
+
+/**
+ * Scatterplot for use in the SPLOM.
+ *
+ * @param data The data to display. Consists of xy coordinates and...
+ * @param dimensions The dimensions of the chart. Consists of width and height. Cannot be None.
+ * @param columnNames The name of the columns being displayed in this ScatterChart.
+ * @returns {JSX.Element}
+ */
+export const SPLOMScatterChart = ({data, dimensions, columnNames}) => {
+    return (
+        <ScatterChart data={data} dimensions={dimensions} columnNames={columnNames}>
+            {(rootG, scales, columnNames) => (
+                <SPLOMBrush rootG={rootG} scales={scales} columnNames={columnNames}/>
+            )}
+        </ScatterChart>
+    )
+}
+
+/**
+ * Scatterplot for the projection.
+ *
+ * @param data The data to display. Consists of xy coordinates and...
+ * @param dimensions The dimensions of the chart. Consists of width and height. Cannot be None.
+ * @param columnNames The name of the columns being displayed in this ScatterChart.
+ * @param setSelectionBounds set the selection bounds from the brush.
+ * @returns {JSX.Element}
+ */
+export const ProjectionScatterChart = ({data, dimensions, columnNames, setSelectionBounds}) => {
+    return (
+        <ScatterChart data={data} dimensions={dimensions} columnNames={columnNames}>
+            {(rootG, scales, columnNames) => (
+                <ProjectionBrush rootG={rootG} scales={scales} columnNames={columnNames}
+                                 setSelectionBounds={setSelectionBounds}/>
+            )}
+        </ScatterChart>
+    )
+}
+
+
+export const ResponsiveProjectionScatterChart = withDimensions(ProjectionScatterChart);
