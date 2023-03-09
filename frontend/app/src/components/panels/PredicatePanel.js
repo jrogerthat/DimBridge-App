@@ -15,7 +15,7 @@ const predicateDict = {
  */
 export const PredicatePanel = () => {
     const predicatesTest = useSelector(selectAllPredicates);
-    console.log('predicates', predicatesTest);
+   
     let predicates = predicatesTest.length > 0 ? Object.entries(predicatesTest) : Object.entries(predicateDict);
     
     return (
@@ -28,7 +28,8 @@ export const PredicatePanel = () => {
                         className="predicate_nav" 
                         key={d[1].id}
                         style={{
-                            backgroundColor:'#f5f5f5',
+                            backgroundColor:'#FFF',
+                            borderBottom: "1px solid #D4D4D4",
                             padding:5,
                             borderRadius:5,
                             margin:3,
@@ -37,28 +38,29 @@ export const PredicatePanel = () => {
                         }}
                         >
                         <div style={{width:'70%'}}>
-                            <div>{`Predicate Score: `}<span style={{fontWeight:800}}>{d[1].score ? d[1].score : "NA"}</span></div>
+                            <div><span style={{color:'gray'}}>{`Predicate Score: `}</span>
+                            <span style={{fontWeight:800}}>{d[1].score ? d[1].score : "NA"}</span></div>
                             <div className='clause_wrap' style={{marginTop:10}}>
                             {
                             d[1].clauses.map(f => {
-                                console.log('FFF',f)
                                 return(
                                     <div 
                                     key={f[0]}
                                     style={{
-                                        borderTop: "1px solid gray",
-                                        backgroundColor: "#f0efef",
+                                        borderTop: "1px solid #D4D4D4",
+                                        backgroundColor: "#FFF",
                                         padding: 3
                                     }}
                                     >
-                                        <span>{`${f.column}: `}</span>{`${(f.min.toFixed(3))} - ${f.max.toFixed(3)}`}
+                                        <span style={{color:'gray'}}>{`${f.column}: `}</span>
+                                        <span style={{fontWeight:700}}>{`${(f.min.toFixed(3))} - ${f.max.toFixed(3)}`}</span>
                                     </div>
                                     )
                                 })
                             }
                         </div>
                         </div>
-                        <div style={{width: '30%', backgroundColor:'white'}}>
+                        <div style={{width: '30%', backgroundColor:'#FAFAFA'}}>
 
                         </div>
                         
