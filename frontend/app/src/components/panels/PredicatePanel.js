@@ -1,12 +1,16 @@
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import {useSelector} from "react-redux";
-import { selectAllPredicates } from '../../slices/predicateSlice';
+import {selectAllPredicates} from '../../slices/predicateSlice';
 
 const predicateDict = {
-    "0": {score: .4, clauses: [{column: 'fixed acidity', min:8.0, max:11.2 }]},
-    "1": {score: .3, clauses: [{column: 'residual sugar', min:1.2, max: 1.8}, {column: 'pH', min:3.04, max:3.11}]},
-    "3": {score: .2, clauses: [{column: "free sulfur dioxide",  min:6, max: 11 }]}
+    "0": {score: .4, id: 0, clauses: [{column: 'fixed acidity', min: 8.0, max: 11.2}]},
+    "1": {
+        score: .3,
+        id: 1,
+        clauses: [{column: 'residual sugar', min: 1.2, max: 1.8}, {column: 'pH', min: 3.04, max: 3.11}]
+    },
+    "3": {score: .2, id: 2, clauses: [{column: "free sulfur dioxide", min: 6, max: 11}]}
 }
 /**
  * The predicate panel. Contains everything related to the predicates that form the DiMENsIoNAl BrIDge.
@@ -14,9 +18,9 @@ const predicateDict = {
  */
 export const PredicatePanel = () => {
     const predicatesTest = useSelector(selectAllPredicates);
-   
-    let predicates = predicatesTest.length > 0 ? Object.entries(predicatesTest) : Object.entries(predicateDict);
-    
+
+    const predicates = predicatesTest.length > 0 ? Object.entries(predicatesTest) : Object.entries(predicateDict);
+
     return (
         <Paper sx={{height: '90%', width: '90%', margin: 'auto'}}>
             <Box>

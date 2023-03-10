@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import Paper from '@mui/material/Paper';
-import {ScatterChart} from "../charts/ScatterChart";
+import {SPLOMScatterChart} from "../charts/ScatterChart";
 import Box from '@mui/material/Box';
 import useElementSize from "../../hooks/useElementSize";
 import Button from '@mui/material/Button';
@@ -140,10 +140,10 @@ const ScatterPlotMatrix = ({data, pairedSPLOMColumns}) => {
 
                             return (
                                 <div key={`${c1}_${c2}`}>
-                                    <ScatterChart data={data.map(d => {
+                                    <SPLOMScatterChart data={data.map(d => {
                                         return {...d, x: d[c1], y: d[c2]}
                                     })} dimensions={{width: scatterWidth, height: scatterHeight}}
-                                                  columnNames={columnNames}/>
+                                                       columnNames={columnNames}/>
                                 </div>
                             )
                         })}

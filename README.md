@@ -2,11 +2,9 @@
 
 ## If using docker to run it:
 
-docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
-
 Its possible you'll need sudo depending on how you've installed Docker. Additionally, I think newer versions of docker lost the hyphen in the actual command, so it might be something along the lines of:
 
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+`docker compose -f docker-compose.yml -f docker-compose.dev.yml up`
 
 ## Non Docker
 
