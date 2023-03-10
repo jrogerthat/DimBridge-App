@@ -25,52 +25,66 @@ export const PredicatePanel = () => {
         <Paper sx={{height: '90%', width: '90%', margin: 'auto'}}>
             <Box>
                 {predicates && predicates.map(d => {
+                    console.log('d', d)
                     return (
-                        <div
-                            className="predicate_nav"
-                            key={d[1].id}
-                            style={{
-                                backgroundColor: '#FFF',
-                                borderBottom: "1px solid #D4D4D4",
-                                padding: 5,
-                                borderRadius: 5,
-                                margin: 3,
-                                display: 'flex',
-                                flexDirection: 'row'
-                            }}
-                        >
-                            <div style={{width: '70%'}}>
-                                <div><span style={{color: 'gray'}}>{`Predicate Score: `}</span>
-                                    <span style={{fontWeight: 800}}>{d[1].score ? d[1].score : "NA"}</span></div>
-                                <div className='clause_wrap' style={{marginTop: 10}}>
-                                    {
-                                        d[1].clauses.map(f => {
-                                            return (
-                                                <div
-                                                    key={`clause_${f.column}`}
-                                                    style={{
-                                                        borderTop: "1px solid #D4D4D4",
-                                                        backgroundColor: "#FFF",
-                                                        padding: 3
-                                                    }}
-                                                >
-                                                    <span style={{color: 'gray'}}>{`${f.column}: `}</span>
-                                                    <span
-                                                        style={{fontWeight: 700}}>{`${(f.min.toFixed(3))} - ${f.max.toFixed(3)}`}</span>
-                                                </div>
-                                            )
-                                        })
-                                    }
-                                </div>
-                            </div>
-                            <div style={{width: '30%', backgroundColor: '#FAFAFA'}}>
-
-                            </div>
-
-                        </div>
+                       <Predicate 
+                       key={`pred-${d[0]}`}
+                       predData={d[1]}/>
                     )
                 })}
             </Box>
         </Paper>
     );
+}
+
+const Predicate = ({predData}) => {
+
+    return(
+        <div
+        className="predicate_nav" 
+        style={{
+            backgroundColor:'#FFF',
+            borderBottom: "1px solid #D4D4D4",
+            padding:5,
+            borderRadius:5,
+            margin:3,
+            display:'flex',
+            flexDirection:'row'
+        }}
+        >
+        <div style={{width:'70%'}}>
+            <div><span style={{color:'gray'}}>{`Predicate Score: `}</span>
+            <span style={{fontWeight:800}}>{predData.score ? predData.score : "NA"}</span></div>
+            <div className='clause_wrap' style={{marginTop:10}}>
+            {
+            predData.clauses.map((f, i) => {
+                return(
+                    <Feature key={`${i}-${f.column}`} clauseData={f} />
+                    )
+                })
+            }
+        </div>
+        </div>
+        <div style={{width: '30%', backgroundColor:'#FAFAFA'}}>
+            heatmap here
+        </div>
+        
+        </div>
+    )
+}
+
+const Feature = ({clauseData}) => {
+
+    return(
+        <div 
+        style={{
+            borderTop: "1px solid #D4D4D4",
+            backgroundColor: "#FFF",
+            padding: 3
+        }}
+        >
+            <span style={{color:'gray'}}>{`${clauseData.column}: `}</span>
+            <span style={{fontWeight:700}}>{`${(clauseData.min.toFixed(3))} - ${clauseData.max.toFixed(3)}`}</span>
+        </div>
+    )
 }
