@@ -2,6 +2,8 @@ import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import {useSelector} from "react-redux";
 import {selectAllPredicates} from '../../slices/predicateSlice';
+import {selectAllClauses} from '../../slices/clauseSlice';
+import { useEffect } from 'react';
 
 const predicateDict = {
     "0": {score: .4, id: 0, clauses: [{column: 'fixed acidity', min: 8.0, max: 11.2}]},
@@ -18,12 +20,24 @@ const predicateDict = {
  */
 export const PredicatePanel = () => {
     const predicatesTest = useSelector(selectAllPredicates);
+    const clauses = useSelector(selectAllClauses);
+
+    useEffect(()=> {
+        console.log('CLAUSES', clauses);
+    }, [clauses]);
 
     const predicates = predicatesTest.length > 0 ? Object.entries(predicatesTest) : Object.entries(predicateDict);
 
     return (
         <Paper sx={{height: '90%', width: '90%', margin: 'auto'}}>
             <Box>
+                {
+                    clauses.length > 0 && (
+                        <div>
+                            <PredicateDraft data={clauses}/>
+                        </div>
+                    )
+                }
                 {predicates && predicates.map(d => {
                     console.log('d', d)
                     return (
@@ -85,6 +99,39 @@ const Feature = ({clauseData}) => {
         >
             <span style={{color:'gray'}}>{`${clauseData.column}: `}</span>
             <span style={{fontWeight:700}}>{`${(clauseData.min.toFixed(3))} - ${clauseData.max.toFixed(3)}`}</span>
+        </div>
+    )
+}
+
+const PredicateDraft = ({data}) => {
+    return(
+        <div
+        className="predicate_nav" 
+        style={{
+            backgroundColor:'#FFF',
+            border: "2px solid #b71c1c",
+            padding:5,
+            borderRadius:5,
+            margin:3,
+            display:'flex',
+            flexDirection:'row'
+        }}
+        >
+        <div style={{width:'100%'}}>
+            <div style={{display:'flex', alignItems:'center'}}>
+                <span
+                style={{fontWeight:800, color:'#b71c1c'}}
+                >Predicate Draft</span></div>
+            <div className='clause_wrap' style={{marginTop:10}}>
+            {
+            data.map((f, i) => {
+                return(
+                    <Feature key={`${i}-${f.column}`} clauseData={f} />
+                    )
+                })
+            }
+        </div>
+        </div>
         </div>
     )
 }
