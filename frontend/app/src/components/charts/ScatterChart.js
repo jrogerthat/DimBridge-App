@@ -3,8 +3,10 @@ import * as d3 from 'd3';
 import {isNil} from "../../utils";
 import {withDimensions} from "../../wrappers/dimensions";
 import {useDispatch, useSelector} from "react-redux";
-import {removeClause, selectClauseById, setClause} from "../../slices/clauseSlice";
+import {removeClause, setClause} from "../../slices/clauseSlice";
 import {getChartBounds, getExtrema} from "./common";
+import {updateSelectedPredicateId} from "../../slices/predicateSlice";
+import {selectSelectedPredicateOrDraft} from "../../app/commonSelectors";
 
 // How far from the axes do we start drawing points
 const BUFFER_PROPORTION = 1 / 20;
@@ -95,13 +97,15 @@ const joinCircles = (rootG,
         .selectAll('circle')
         .data(data, d => d.id)
         .join('circle')
-        .raise()
         .attr('r', 2)
-        .attr('cx', function (d) {
+        .attr('cx', (d) => {
             return xScale(d.x);
         })
-        .attr('cy', function (d) {
+        .attr('cy', (d) => {
             return yScale(d.y);
+        })
+        .attr('fill', (d) => {
+            return d.isFiltered ? '#b71c1c' : '#315b93';
         })
         .style('stroke', 'black')
         .style('stroke-width', .25);
@@ -165,7 +169,8 @@ export const ScatterChart = ({dimensions, data, columnNames, children}) => {
 const SPLOMBrush = ({rootG, scales, columnNames}) => {
     const dispatch = useDispatch();
     const [brushState, setBrushState] = useState();
-    const clause = useSelector((state) => selectClauseById(state, columnNames.xColumn));
+    const predicate = useSelector(selectSelectedPredicateOrDraft);
+    const clause = predicate?.clauses[columnNames.xColumn];
 
     // Redraw chart on data or dimension change
     useEffect(() => {
@@ -181,6 +186,7 @@ const SPLOMBrush = ({rootG, scales, columnNames}) => {
                     const xDataSpace = xPixelSpace.map(scales.xScale.invert);
                     const xClause = {'column': columnNames.xColumn, 'min': xDataSpace[0], 'max': xDataSpace[1]}
                     dispatch(setClause(xClause));
+                    dispatch(updateSelectedPredicateId(undefined))
                 } else {
                     // Otherwise remove any clause associated with this column.
                     dispatch(removeClause(columnNames.xColumn));

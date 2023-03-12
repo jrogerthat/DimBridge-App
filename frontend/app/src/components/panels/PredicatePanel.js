@@ -1,32 +1,18 @@
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
-import {useSelector} from "react-redux";
-import {selectAllPredicates} from '../../slices/predicateSlice';
+import {useDispatch, useSelector} from "react-redux";
+import {selectAllPredicates, selectSelectedPredicateId, updateSelectedPredicateId} from '../../slices/predicateSlice';
 import {selectAllClauses} from '../../slices/clauseSlice';
-import { useEffect } from 'react';
 
-const predicateDict = {
-    "0": {score: .4, id: 0, clauses: [{column: 'fixed acidity', min: 8.0, max: 11.2}]},
-    "1": {
-        score: .3,
-        id: 1,
-        clauses: [{column: 'residual sugar', min: 1.2, max: 1.8}, {column: 'pH', min: 3.04, max: 3.11}]
-    },
-    "3": {score: .2, id: 2, clauses: [{column: "free sulfur dioxide", min: 6, max: 11}]}
-}
+
 /**
  * The predicate panel. Contains everything related to the predicates that form the DiMENsIoNAl BrIDge.
  * @returns {JSX.Element}
  */
 export const PredicatePanel = () => {
-    const predicatesTest = useSelector(selectAllPredicates);
+    const predicates = useSelector(selectAllPredicates);
+    const selectedPredicateId = useSelector(selectSelectedPredicateId);
     const clauses = useSelector(selectAllClauses);
-
-    useEffect(()=> {
-        console.log('CLAUSES', clauses);
-    }, [clauses]);
-
-    const predicates = predicatesTest.length > 0 ? Object.entries(predicatesTest) : Object.entries(predicateDict);
 
     return (
         <Paper sx={{height: '90%', width: '90%', margin: 'auto'}}>
@@ -39,11 +25,11 @@ export const PredicatePanel = () => {
                     )
                 }
                 {predicates && predicates.map(d => {
-                    console.log('d', d)
                     return (
                        <Predicate 
-                       key={`pred-${d[0]}`}
-                       predData={d[1]}/>
+                       key={`pred-${d.id}`}
+                       predData={d}
+                       selected={selectedPredicateId === d.id}/>
                     )
                 })}
             </Box>
@@ -51,7 +37,10 @@ export const PredicatePanel = () => {
     );
 }
 
-const Predicate = ({predData}) => {
+const Predicate = ({predData, selected}) => {
+
+    const dispatch = useDispatch();
+    const clauses = Object.entries(predData.clauses);
 
     return(
         <div
@@ -65,15 +54,16 @@ const Predicate = ({predData}) => {
             display:'flex',
             flexDirection:'row'
         }}
+        onClick={() => dispatch(updateSelectedPredicateId(predData.id))}
         >
         <div style={{width:'70%'}}>
             <div><span style={{color:'gray'}}>{`Predicate Score: `}</span>
             <span style={{fontWeight:800}}>{predData.score ? predData.score : "NA"}</span></div>
             <div className='clause_wrap' style={{marginTop:10}}>
             {
-            predData.clauses.map((f, i) => {
+            clauses.map(([column, data], i) => {
                 return(
-                    <Feature key={`${i}-${f.column}`} clauseData={f} />
+                    <Feature key={`${i}-${column}`} clauseData={{id: column, ...data}} />
                     )
                 })
             }
@@ -104,6 +94,8 @@ const Feature = ({clauseData}) => {
 }
 
 const PredicateDraft = ({data}) => {
+    const dispatch = useDispatch();
+
     return(
         <div
         className="predicate_nav" 
@@ -116,6 +108,7 @@ const PredicateDraft = ({data}) => {
             display:'flex',
             flexDirection:'row'
         }}
+        onClick={() => dispatch(updateSelectedPredicateId(undefined))}
         >
         <div style={{width:'100%'}}>
             <div style={{display:'flex', alignItems:'center'}}>
