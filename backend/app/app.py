@@ -7,7 +7,7 @@ from flask import Flask, request
 import pandas as pd
 from sklearn.manifold import TSNE
 
-from predicates import infer_dtypes, encode
+from predicates import infer_dtypes, encode, data_to_predicates, unique, bin_numeric, F1, PredicateInduction
 
 DATA_FOLDER: Path = Path(Path(__file__).parent, 'data')
 
@@ -60,7 +60,31 @@ def predicate(dataset=None, projection_algorithm=None, selected_ids=None):
     projection_algorithm = request.args.get('projection_algorithm')
     selected_ids = [int(x) for x in request.args.get('selected_ids').split(',')]
 
-    return [{'id': uuid.uuid4(), 'clauses': [{'column': 'pH', 'min': 3.37, 'max': 3.38}]}]
+    df = pd.read_csv(str(Path(DATA_FOLDER, datasets[dataset]))) #dataframe containing original data
+    dtypes = infer_dtypes(df)
+
+    binned_df = bin_numeric(df, dtypes, )
+    target = df.index.isin(selected_ids).astype(int)
+    attribute_predicates, indices = data_to_predicates(binned_df, df, dtypes)
+    f1 = F1()
+    p = PredicateInduction(
+        df, dtypes,
+        target=target,
+        score_func=f1,
+        attribute_predicates=attribute_predicates,
+    )
+
+    a = {k: list(v.unique()) for k,v in indices[target==1].to_dict('series').items()}
+    predicates = [x for y in [unique([attribute_predicates[k][i] for i in indices[k]]) for k,v in a.items()] for x in y]
+    p.search(predicates if not p.started_search else None, max_accepted=1, max_steps=None, max_clauses=3, breadth_first=False)
+    predicate = p.last_accepted
+
+    clauses = [{'column': k, 'min': v[0], 'max': v[1]} for k,v in predicate.attribute_values.items()]
+    return [{'id': uuid.uuid4(), 'clauses': clauses, 'score': p.score(predicate)}]
+    # return [{'id': uuid.uuid4(), 'clauses': [{'column': 'pH', 'min': 3.37, 'max': 3.38}]}]
+
+if __name__ == "__main__":
+    api.run(host='localhost',port=5000)
 
 
 # @api.route('/api/predicate')
