@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import Paper from '@mui/material/Paper';
 import {SPLOMScatterChart} from "../charts/ScatterChart";
 import Box from '@mui/material/Box';
@@ -159,11 +159,26 @@ const ScatterPlotMatrix = ({data, pairedSPLOMColumns}) => {
  * The data panel. Contains everything related to the data side of the DiMENsIoNAl BrIDge.
  * @param data The data to display. Currently requires just the features, and gets rid of the projection data.
  * (Projection data should be filtered out before here in the future)
+ * @param selectedPredicate The currently selected predicate.
  * @returns {JSX.Element}
  */
-export const DataPanel = ({data}) => {
+export const DataPanel = ({data, selectedPredicate}) => {
     // The columns currently displayed in the data panel
     const [currentlyDisplayedColumns, setCurrentlyDisplayedColumns] = useState(new Set());
+
+    // We want to show all the columns the user has selected as well as any relevant
+    // to the selected predicate.
+    useEffect(() => {
+        Object.entries(selectedPredicate.clauses).forEach(([id]) => {
+            const temp = new Set(currentlyDisplayedColumns);
+            if (!currentlyDisplayedColumns.has(id)) {
+                temp.add(id);
+            }
+            if (temp.size > currentlyDisplayedColumns.size) {
+                setCurrentlyDisplayedColumns(temp);
+            }
+        })
+    }, [currentlyDisplayedColumns, setCurrentlyDisplayedColumns, selectedPredicate])
 
     // Pair the columns for display as a SPLOM.
     const pairedSPLOMColumns = pairColumnsForSPLOM(currentlyDisplayedColumns);
