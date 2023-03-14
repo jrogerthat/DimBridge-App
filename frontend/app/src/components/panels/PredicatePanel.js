@@ -86,17 +86,21 @@ const Predicate = ({predData, selected}) => {
     const dispatch = useDispatch();
     const clauses = Object.entries(predData.clauses);
 
+    console.log('selected???',selected)
+
     return(
         <div
         className="predicate_nav" 
         style={{
-            backgroundColor:'#FFF',
-            borderBottom: "1px solid #D4D4D4",
+            backgroundColor: selected ? '#eeeeee' : '#FFF',
+            // borderBottom: "1px solid #D4D4D4",
             padding:5,
             borderRadius:5,
             margin:3,
             display:'flex',
-            flexDirection:'row'
+            flexDirection:'row',
+            cursor:'pointer',
+            border: selected ? "2px solid #D4D4D4" : "2px solid #eeeeee"
         }}
         onClick={() => dispatch(updateSelectedPredicateId(predData.id))}
         >
@@ -122,8 +126,8 @@ const Feature = ({clauseData}) => {
     return(
         <div 
         style={{
-            borderTop: "1px solid #D4D4D4",
-            backgroundColor: "#FFF",
+            borderTop: "1px solid #gray", //: "1px solid #D4D4D4",
+            // backgroundColor: "#FFF",
             padding: 3
         }}
         >

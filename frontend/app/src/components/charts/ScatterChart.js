@@ -139,7 +139,7 @@ export const ScatterChart = ({dimensions, data, columnNames, children}) => {
     // Redraw chart on data or dimension change
     useEffect(() => {
         if (!isNil(data) && !isNil(scatterRef.current)) {
-            console.log('DATA', data);
+           
             const rootG = d3.select(scatterRef.current);
             const scatterBounds = getChartBounds(dimensions);
             const extrema = getExtrema(data);
@@ -262,6 +262,7 @@ const ProjectionBrush = ({rootG, scales, columnNames, data}) => {
                         return d.x > selectionBounds.x.min && d.x < selectionBounds.x.max && d.y > selectionBounds.y.min && d.y < selectionBounds.y.max;
                     }).map(d => d.id);
 
+
                     dispatch(updatePrepredicateSelectedIds(selectedIds));
                 } else {
                     dispatch(updatePrepredicateSelectedIds(undefined));
@@ -311,7 +312,9 @@ export const SPLOMScatterChart = ({data, dimensions, columnNames}) => {
  * @param columnNames The name of the columns being displayed in this ScatterChart.
  * @returns {JSX.Element}
  */
-export const ProjectionScatterChart = ({data, dimensions, columnNames}) => {
+export const ProjectionScatterChart = ({data, selectedPredicate, dimensions, columnNames}) => {
+
+    console.log('SELCTED PRED IN SCATTER??', selectedPredicate)
     return (
         <ScatterChart data={data} dimensions={dimensions} columnNames={columnNames}>
             {(rootG, scales, columnNames) => (
