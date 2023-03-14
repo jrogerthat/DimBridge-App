@@ -1,11 +1,11 @@
-import {useEffect, useMemo, useRef, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import * as d3 from 'd3';
 import {isNil} from "../../utils";
 import {withDimensions} from "../../wrappers/dimensions";
 import {useDispatch, useSelector} from "react-redux";
 import {removeClause, setClause} from "../../slices/clauseSlice";
 import {getChartBounds, getExtrema} from "./common";
-import {updateProjectionSelection, updateSelectedPredicateId} from "../../slices/predicateSlice";
+import {updatePrepredicateSelectedIds, updateSelectedPredicateId} from "../../slices/predicateSlice";
 import {selectSelectedPredicateOrDraft} from "../../app/commonSelectors";
 
 // How far from the axes do we start drawing points
@@ -246,6 +246,7 @@ const ProjectionBrush = ({rootG, scales, columnNames, data}) => {
                     // If there is a valid selection add its clause.
                     const pixelSpace = e.selection;
 
+                    // y min and max should be swapped no?
                     const selectionBounds = {
                         'x': {
                             'min': scales.xScale.invert(pixelSpace[0][0]),
@@ -261,10 +262,9 @@ const ProjectionBrush = ({rootG, scales, columnNames, data}) => {
                         return d.x > selectionBounds.x.min && d.x < selectionBounds.x.max && d.y > selectionBounds.y.min && d.y < selectionBounds.y.max;
                     }).map(d => d.id);
 
-                    // y min and max should be swapped no?
-                    dispatch(updateProjectionSelection(selectedIds));
+                    dispatch(updatePrepredicateSelectedIds(selectedIds));
                 } else {
-                    dispatch(updateProjectionSelection(undefined));
+                    dispatch(updatePrepredicateSelectedIds(undefined));
                 }
             }
         }
@@ -275,7 +275,7 @@ const ProjectionBrush = ({rootG, scales, columnNames, data}) => {
             .select('#brush')
             .call(brush);
 
-    }, [rootG, columnNames, dispatch, scales]);
+    }, [rootG, columnNames, dispatch, scales, data]);
 
     return (
         <></>

@@ -4,7 +4,7 @@ import {useDispatch, useSelector} from "react-redux";
 import {
     selectAllPredicates,
     selectSelectedPredicateId,
-    selectProjectionSelection,
+    selectPrepredicateSelectedIds,
     updateSelectedPredicateId,
     addPixalPredicates
 } from '../../slices/predicateSlice';
@@ -24,7 +24,7 @@ export const PredicatePanel = () => {
     const predicates = useSelector(selectAllPredicates);
     const selectedPredicateId = useSelector(selectSelectedPredicateId);
     const clauses = useSelector(selectAllClauses);
-    const projectionSelection = useSelector(selectProjectionSelection);
+    const prepredicateSelectedIds = useSelector(selectPrepredicateSelectedIds);
     // const skip = isNil(projectionSelection) || predicates.length === 0;
     // const {data: scores, isLoading, isSuccess} = useGetPixalScoresQuery(['redwine', projectionSelection, predicates], {skip,});
     const [trigger, {data: pixalPredicates, isFetching: pixalPredicatesFetching}] = useLazyGetPixalPredicatesQuery();
@@ -54,9 +54,9 @@ export const PredicatePanel = () => {
                 display: 'flex',
                 justifyContent: 'space-evenly'
             }}>
-                <Button variant={"outlined"} disabled={isNil(projectionSelection) || pixalPredicatesFetching}
+                <Button variant={"outlined"} disabled={isNil(prepredicateSelectedIds) || pixalPredicatesFetching}
                         sx={{width: '30%', marginTop: 'auto', marginBottom: 'auto'}} onClick={() => {
-                            trigger(['redwine', projectionSelection]);
+                            trigger(['redwine', prepredicateSelectedIds]);
                         }
                 }>Get Predicates</Button>
             </Paper>
