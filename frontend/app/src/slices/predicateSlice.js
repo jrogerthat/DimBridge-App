@@ -10,6 +10,7 @@ const predicateAdapter = createEntityAdapter({
 
 const initialState = predicateAdapter.getInitialState({
     selectedPredicateId: undefined,
+    prepredicateSelectedIds: undefined,
 });
 
 export const transformClauseArrayToPredicate = (id, type, clausesArr) => {
@@ -34,6 +35,12 @@ const predicateSlice = createSlice({
             predicateAdapter.addOne(state, transformClauseArrayToPredicate(nanoid(), 'manual', action.payload.clauses))
         },
         /**
+         * Add a predicate created manually by the user.
+         */
+        addPixalPredicates: (state, action) => {
+            predicateAdapter.addMany(state, action.payload)
+        },
+        /**
          * Remove any predicate by ID.
          */
         removePredicate: predicateAdapter.removeOne,
@@ -42,6 +49,12 @@ const predicateSlice = createSlice({
          */
         updateSelectedPredicateId(state, action) {
             state.selectedPredicateId = action.payload;
+        },
+        /**
+         * Update the projection selection.
+         */
+        updatePrepredicateSelectedIds(state, action) {
+            state.prepredicateSelectedIds = action.payload;
         }
     },
 });
@@ -60,6 +73,10 @@ export const selectSelectedPredicateId = (state) => {
     return state.predicate.selectedPredicateId;
 }
 
-export const {addManualPredicate, removePredicate, updateSelectedPredicateId} = predicateSlice.actions;
+export const selectPrepredicateSelectedIds = (state) => {
+    return state.predicate.prepredicateSelectedIds;
+}
+
+export const {addManualPredicate, removePredicate, updateSelectedPredicateId, updatePrepredicateSelectedIds, addPixalPredicates} = predicateSlice.actions;
 
 export default predicateSlice.reducer;

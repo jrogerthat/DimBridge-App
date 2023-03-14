@@ -25,10 +25,18 @@ export const pixalApi = createApi({
          * The predicates from pixal. Depends on the dataset name, projection algorithm, and selected points.
          */
         getPixalPredicates: builder.query({
-            query: ([datasetName, projectionAlgorithm, ids]) => {
+            query: ([datasetName, ids]) => {
                 return {
                     url: 'predicates',
-                    params: {'dataset': datasetName, 'projection_algorithm': projectionAlgorithm, 'selected_ids': ids},
+                    params: {'dataset': datasetName, 'selected_ids': ids},
+                };
+            }
+        }),
+        getPixalScores: builder.query({
+            query: ([datasetName, ids, predicates]) => {
+                return {
+                    url: 'scores',
+                    params: {'dataset': datasetName, 'selected_ids': ids, 'predicates': predicates},
                 };
             },
         }),
@@ -37,4 +45,4 @@ export const pixalApi = createApi({
 
 // Export hooks for usage in functional components, which are
 // auto-generated based on the defined endpoints
-export const {useGetDataQuery, useGetPixalPredicatesQuery} = pixalApi;
+export const {useGetDataQuery, useLazyGetPixalPredicatesQuery, useGetPixalScoresQuery} = pixalApi;

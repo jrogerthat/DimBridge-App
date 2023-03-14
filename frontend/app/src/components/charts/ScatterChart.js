@@ -5,7 +5,7 @@ import {withDimensions} from "../../wrappers/dimensions";
 import {useDispatch, useSelector} from "react-redux";
 import {removeClause, setClause} from "../../slices/clauseSlice";
 import {getChartBounds, getExtrema} from "./common";
-import {updateSelectedPredicateId} from "../../slices/predicateSlice";
+import {updatePrepredicateSelectedIds, updateSelectedPredicateId} from "../../slices/predicateSlice";
 import {selectSelectedPredicateOrDraft} from "../../app/commonSelectors";
 
 // How far from the axes do we start drawing points
@@ -229,10 +229,9 @@ const SPLOMBrush = ({rootG, scales, columnNames}) => {
  * @param rootG The group to find the brushG on.
  * @param scales The scales necessary for the brush.
  * @param columnNames The columns/axes of the brush.
- * @param setSelectionBounds Sets the bounds of the selection within the projection scatter.
  * @returns {JSX.Element}
  */
-const ProjectionBrush = ({rootG, scales, columnNames, setSelectionBounds}) => {
+const ProjectionBrush = ({rootG, scales, columnNames, data}) => {
     const dispatch = useDispatch();
 
     // Redraw chart on data or dimension change
@@ -248,19 +247,24 @@ const ProjectionBrush = ({rootG, scales, columnNames, setSelectionBounds}) => {
                     const pixelSpace = e.selection;
 
                     // y min and max should be swapped no?
-                    setSelectionBounds(
-                        {
-                            'x': {
-                                'min': scales.xScale.invert(pixelSpace[0][0]),
-                                'max': scales.xScale.invert(pixelSpace[1][0])
-                            },
-                            'y': {
-                                'min': scales.yScale.invert(pixelSpace[1][1]),
-                                'max': scales.yScale.invert(pixelSpace[0][1])
-                            }
-                        });
+                    const selectionBounds = {
+                        'x': {
+                            'min': scales.xScale.invert(pixelSpace[0][0]),
+                            'max': scales.xScale.invert(pixelSpace[1][0])
+                        },
+                        'y': {
+                            'min': scales.yScale.invert(pixelSpace[1][1]),
+                            'max': scales.yScale.invert(pixelSpace[0][1])
+                        }
+                    };
+
+                    const selectedIds = data.filter(d => {
+                        return d.x > selectionBounds.x.min && d.x < selectionBounds.x.max && d.y > selectionBounds.y.min && d.y < selectionBounds.y.max;
+                    }).map(d => d.id);
+
+                    dispatch(updatePrepredicateSelectedIds(selectedIds));
                 } else {
-                    setSelectionBounds(null);
+                    dispatch(updatePrepredicateSelectedIds(undefined));
                 }
             }
         }
@@ -271,7 +275,7 @@ const ProjectionBrush = ({rootG, scales, columnNames, setSelectionBounds}) => {
             .select('#brush')
             .call(brush);
 
-    }, [rootG, columnNames, dispatch, scales, setSelectionBounds]);
+    }, [rootG, columnNames, dispatch, scales, data]);
 
     return (
         <></>
@@ -305,15 +309,14 @@ export const SPLOMScatterChart = ({data, dimensions, columnNames}) => {
  * @param data The data to display. Consists of xy coordinates and...
  * @param dimensions The dimensions of the chart. Consists of width and height. Cannot be None.
  * @param columnNames The name of the columns being displayed in this ScatterChart.
- * @param setSelectionBounds set the selection bounds from the brush.
  * @returns {JSX.Element}
  */
-export const ProjectionScatterChart = ({data, dimensions, columnNames, setSelectionBounds}) => {
+export const ProjectionScatterChart = ({data, dimensions, columnNames}) => {
     return (
         <ScatterChart data={data} dimensions={dimensions} columnNames={columnNames}>
             {(rootG, scales, columnNames) => (
                 <ProjectionBrush rootG={rootG} scales={scales} columnNames={columnNames}
-                                 setSelectionBounds={setSelectionBounds}/>
+                                 data={data}/>
             )}
         </ScatterChart>
     )

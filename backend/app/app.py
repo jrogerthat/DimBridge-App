@@ -79,8 +79,8 @@ def predicate(dataset=None, projection_algorithm=None, selected_ids=None):
     p.search(predicates if not p.started_search else None, max_accepted=1, max_steps=None, max_clauses=3, breadth_first=False)
     predicate = p.last_accepted
 
-    clauses = [{'column': k, 'min': v[0], 'max': v[1]} for k,v in predicate.attribute_values.items()]
-    return [{'id': uuid.uuid4(), 'clauses': clauses, 'score': p.score(predicate)}]
+    clauses = {k: {'min': v[0], 'max': v[1]} for k,v in predicate.attribute_values.items()}
+    return [{'id': uuid.uuid4(), 'type': 'pixal', 'clauses': clauses, 'score': p.score(predicate)}]
     # return [{'id': uuid.uuid4(), 'clauses': [{'column': 'pH', 'min': 3.37, 'max': 3.38}]}]
 
 @api.route('/api/score_predicate')
