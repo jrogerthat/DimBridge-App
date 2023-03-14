@@ -86,8 +86,6 @@ const Predicate = ({predData, selected}) => {
     const dispatch = useDispatch();
     const clauses = Object.entries(predData.clauses);
 
-    console.log('selected???',selected)
-
     return(
         <div
         className="predicate_nav" 
