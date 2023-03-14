@@ -100,7 +100,7 @@ const Predicate = ({predData, selected}) => {
         }}
         onClick={() => dispatch(updateSelectedPredicateId(predData.id))}
         >
-        <div style={{width:'70%'}}>
+        <div style={{width:'100%'}}>
             <div><span style={{color:'gray'}}>{`Predicate Score: `}</span>
             <span style={{fontWeight:800}}>{predData.score ? predData.score : "NA"}</span></div>
             <div className='clause_wrap' style={{marginTop:10}}>
@@ -113,10 +113,6 @@ const Predicate = ({predData, selected}) => {
             }
         </div>
         </div>
-        <div style={{width: '30%', backgroundColor:'#FAFAFA'}}>
-            heatmap here
-        </div>
-        
         </div>
     )
 }

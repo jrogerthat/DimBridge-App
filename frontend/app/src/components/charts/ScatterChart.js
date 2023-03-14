@@ -37,7 +37,6 @@ const appendGroups = (selection) => {
  */
 const createScatterScales = ({minX, maxX, minY, maxY}, {startX, endX, startY, endY}) => {
 
-
     const xScaleBuffer = (maxX - minX) * BUFFER_PROPORTION;
     const yScaleBuffer = (maxY - minY) * BUFFER_PROPORTION;
 
@@ -140,6 +139,7 @@ export const ScatterChart = ({dimensions, data, columnNames, children}) => {
     // Redraw chart on data or dimension change
     useEffect(() => {
         if (!isNil(data) && !isNil(scatterRef.current)) {
+            console.log('DATA', data);
             const rootG = d3.select(scatterRef.current);
             const scatterBounds = getChartBounds(dimensions);
             const extrema = getExtrema(data);
