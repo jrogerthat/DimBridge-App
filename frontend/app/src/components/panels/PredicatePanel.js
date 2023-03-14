@@ -1,8 +1,18 @@
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import {useDispatch, useSelector} from "react-redux";
-import {selectAllPredicates, selectSelectedPredicateId, updateSelectedPredicateId} from '../../slices/predicateSlice';
+import {
+    selectAllPredicates,
+    selectSelectedPredicateId,
+    selectProjectionSelection,
+    updateSelectedPredicateId,
+    addPixalPredicates
+} from '../../slices/predicateSlice';
 import {selectAllClauses} from '../../slices/clauseSlice';
+import {useLazyGetPixalPredicatesQuery} from "../../services/pixal";
+import {isNil} from "../../utils";
+import Button from "@mui/material/Button";
+import {useEffect} from "react";
 
 
 /**
@@ -10,13 +20,47 @@ import {selectAllClauses} from '../../slices/clauseSlice';
  * @returns {JSX.Element}
  */
 export const PredicatePanel = () => {
+    const dispatch = useDispatch();
     const predicates = useSelector(selectAllPredicates);
     const selectedPredicateId = useSelector(selectSelectedPredicateId);
     const clauses = useSelector(selectAllClauses);
+    const projectionSelection = useSelector(selectProjectionSelection);
+    // const skip = isNil(projectionSelection) || predicates.length === 0;
+    // const {data: scores, isLoading, isSuccess} = useGetPixalScoresQuery(['redwine', projectionSelection, predicates], {skip,});
+    const [trigger, {data: pixalPredicates, isFetching: pixalPredicatesFetching}] = useLazyGetPixalPredicatesQuery();
+
+    useEffect(() => {
+        if (!isNil(pixalPredicates) && pixalPredicates.length > 0)
+        {
+            dispatch(addPixalPredicates(pixalPredicates));
+        }
+    }, [pixalPredicates, dispatch]);
+
+    // const scoredPredicates = useMemo(()=> {
+    //     if (!isNil(predicates) && !isNil(scores))
+    //     {
+    //         return predicates.map(d => {
+    //             return {...d, score: scores[d.id]}
+    //         })
+    //     }
+    // }, [predicates, scores]);
 
     return (
-        <Paper sx={{height: '90%', width: '90%', margin: 'auto'}}>
-            <Box>
+        <Box sx={{height: '90%', width: '90%', margin: 'auto', display: 'flex', flexDirection: 'column'}}>
+            <Paper sx={{
+                height: '15%',
+                width: '100%',
+                marginBottom: '5%',
+                display: 'flex',
+                justifyContent: 'space-evenly'
+            }}>
+                <Button variant={"outlined"} disabled={isNil(projectionSelection) || pixalPredicatesFetching}
+                        sx={{width: '30%', marginTop: 'auto', marginBottom: 'auto'}} onClick={() => {
+                            trigger(['redwine', projectionSelection]);
+                        }
+                }>Get Predicates</Button>
+            </Paper>
+            <Paper sx={{height: '80%', width: '100%', marginTop: '5%'}}>
                 {
                     clauses.length > 0 && (
                         <div>
@@ -32,8 +76,8 @@ export const PredicatePanel = () => {
                        selected={selectedPredicateId === d.id}/>
                     )
                 })}
-            </Box>
-        </Paper>
+            </Paper>
+        </Box>
     );
 }
 
@@ -63,7 +107,7 @@ const Predicate = ({predData, selected}) => {
             {
             clauses.map(([column, data], i) => {
                 return(
-                    <Feature key={`${i}-${column}`} clauseData={{id: column, ...data}} />
+                    <Feature key={`${i}-${column}`} clauseData={{column: column, ...data}} />
                     )
                 })
             }
