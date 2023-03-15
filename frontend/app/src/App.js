@@ -33,13 +33,12 @@ function App() {
      */
 
     const transformedData = useMemo(() => {
+        console.log('transformed data firing');
         if (!isNil(data)) {
             if (isNil(selectedPredicate)) {
                 return data;
             }else if((selectedPredicate.id !== 'draft') && !isNil(prepredicateSelectedIds)){
-
-                console.log('selected predicate not nil, predicate selected ids not nil', selectedPredicate, prepredicateSelectedIds);
-                
+ 
                 let clauseArray = Object.entries(selectedPredicate.clauses);
                 let fromPredicateIds = data.filter(f => {
                     let testArray = [];
@@ -54,7 +53,7 @@ function App() {
                 let intersectionArray = prepredicateSelectedIds.filter(f => fromPredicateIds.indexOf(f) !== -1);
               
                 return data.map(d => {
-               
+                    
                     let unselected = false;
                     let predNotBrush = false;
                     let brushNotPred = false;
@@ -68,6 +67,7 @@ function App() {
                     //is datum in the brush but not predicate
                     }else if(inBrushButNotPredicateArray.indexOf(d.id) !== -1){
                         brushNotPred = true;
+                    //is datum not involved in any of these selections
                     }else if(fromPredicateIds.indexOf(d.id) === -1 && prepredicateSelectedIds.indexOf(d.id) === -1){
                         unselected = true;
                     }
@@ -86,7 +86,7 @@ function App() {
             })
         }
         return undefined
-    }, [data, selectedPredicate]);
+    }, [data, selectedPredicate, prepredicateSelectedIds]);
 
     return (
         <Box sx={{height: '100%', width: '100%'}}>
