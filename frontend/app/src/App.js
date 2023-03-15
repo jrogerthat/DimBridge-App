@@ -96,7 +96,7 @@ function App() {
             {isSuccess && transformedData && <Box
                 sx={{height: 'calc(100% - 52px)', width: '100%', display: 'grid', gridTemplateColumns: '2fr 1fr 2fr'}}>
                 <FlexBox>
-                    <ProjectionPanel data={transformedData} selectedPredicate={selectedPredicate}/>
+                    <ProjectionPanel data={transformedData} />
                 </FlexBox>
                 <FlexBox>
                     <PredicatePanel />

@@ -162,7 +162,6 @@ const joinCircles = (rootG,
 export const ScatterChart = ({dimensions, data, columnNames, children}) => {
     const scatterRef = useRef();
     const [scaleState, setScaleState] = useState();
-    const selectedPredicate = useSelector(selectSelectedPredicateOrDraft);
 
     // Initial setup -- this runs once.
     useEffect(() => {
