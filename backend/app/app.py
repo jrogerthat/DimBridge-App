@@ -14,7 +14,7 @@ DATA_FOLDER: Path = Path(Path(__file__).parent, 'data')
 api = Flask(__name__)
 api.config['SECRET_KEY'] = environ.get('SECRET_KEY')
 projection_algorithms = {'tsne': TSNE(n_components=2).fit_transform}
-datasets = {'redwine': 'winequality-red.csv'}
+datasets = {'redwine': 'winequality-red-w-tsnse.csv'}
 
 
 @api.after_request
@@ -40,6 +40,9 @@ def data(dataset=None, projection_algorithm=None):
     projection_algorithm = request.args.get('projection_algorithm')
 
     features = pd.read_csv(str(Path(DATA_FOLDER, datasets[dataset]))) #dataframe containing original data
+    features = features.to_dict(orient='records')
+    return features
+
     dtypes = infer_dtypes(features)
     encoded_data = encode(features, dtypes) #one-hot encode numeric columns, date columns to numeric
 
