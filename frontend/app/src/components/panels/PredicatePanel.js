@@ -90,17 +90,19 @@ const Predicate = ({predData, selected}) => {
         <div
         className="predicate_nav" 
         style={{
-            backgroundColor:'#FFF',
-            borderBottom: "1px solid #D4D4D4",
+            backgroundColor: selected ? '#eeeeee' : '#FFF',
+            // borderBottom: "1px solid #D4D4D4",
             padding:5,
             borderRadius:5,
             margin:3,
             display:'flex',
-            flexDirection:'row'
+            flexDirection:'row',
+            cursor:'pointer',
+            border: selected ? "2px solid #D4D4D4" : "2px solid #eeeeee"
         }}
         onClick={() => dispatch(updateSelectedPredicateId(predData.id))}
         >
-        <div style={{width:'70%'}}>
+        <div style={{width:'100%'}}>
             <div><span style={{color:'gray'}}>{`Predicate Score: `}</span>
             <span style={{fontWeight:800}}>{predData.score ? predData.score : "NA"}</span></div>
             <div className='clause_wrap' style={{marginTop:10}}>
@@ -113,10 +115,6 @@ const Predicate = ({predData, selected}) => {
             }
         </div>
         </div>
-        <div style={{width: '30%', backgroundColor:'#FAFAFA'}}>
-            heatmap here
-        </div>
-        
         </div>
     )
 }
@@ -126,8 +124,8 @@ const Feature = ({clauseData}) => {
     return(
         <div 
         style={{
-            borderTop: "1px solid #D4D4D4",
-            backgroundColor: "#FFF",
+            borderTop: "1px solid #gray", //: "1px solid #D4D4D4",
+            // backgroundColor: "#FFF",
             padding: 3
         }}
         >

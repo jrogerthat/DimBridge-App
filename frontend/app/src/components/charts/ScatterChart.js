@@ -5,7 +5,11 @@ import {withDimensions} from "../../wrappers/dimensions";
 import {useDispatch, useSelector} from "react-redux";
 import {removeClause, setClause} from "../../slices/clauseSlice";
 import {getChartBounds, getExtrema} from "./common";
-import {updatePrepredicateSelectedIds, updateSelectedPredicateId} from "../../slices/predicateSlice";
+import {selectAllPredicates, 
+    updatePrepredicateSelectedIds, 
+    updateSelectedPredicateId,
+    selectPrepredicateSelectedIds
+} from "../../slices/predicateSlice";
 import {selectSelectedPredicateOrDraft} from "../../app/commonSelectors";
 
 // How far from the axes do we start drawing points
@@ -36,7 +40,6 @@ const appendGroups = (selection) => {
  * @returns {{xScale: *, yScale: *}}
  */
 const createScatterScales = ({minX, maxX, minY, maxY}, {startX, endX, startY, endY}) => {
-
 
     const xScaleBuffer = (maxX - minX) * BUFFER_PROPORTION;
     const yScaleBuffer = (maxY - minY) * BUFFER_PROPORTION;
@@ -81,6 +84,39 @@ const callAxis = (rootG,
         .call(yAxis);
 }
 
+const circleFill = (d) => {
+    if(d.isFiltered){
+        return '#CF1603'; //red
+    }else if(d.intersection){
+        return 'purple'
+    }else if(d.predNotBrush){
+        return '#CF1603'; //red;
+    }else if(d.brushNotPred){
+        return '#0371CF';
+    }else{
+        return 'gray';
+    }
+}
+
+const circleRadius = (d) => {
+    if(d.hasOwnProperty('isFiltered')){
+        if(d.isFiltered){
+            return 2.5
+        }else{
+            return 2
+        }
+    }else if(d.hasOwnProperty('unselected')){
+        if(d.unselected){
+            return 2;
+        }else{
+            return 2.5
+        }
+    }else{
+        return 2;
+    }
+}
+
+
 /**
  * Join the circles onto the plot.
  * @param rootG The rootG to find the circles G.
@@ -97,16 +133,15 @@ const joinCircles = (rootG,
         .selectAll('circle')
         .data(data, d => d.id)
         .join('circle')
-        .attr('r', 2)
+        .attr('r', (d)=> circleRadius(d))
         .attr('cx', (d) => {
             return xScale(d.x);
         })
         .attr('cy', (d) => {
             return yScale(d.y);
         })
-        .attr('fill', (d) => {
-            return d.isFiltered ? '#b71c1c' : '#315b93';
-        })
+        .attr('fill', (d) => circleFill(d))
+        .attr('opacity', (d)=> d.unselected ? .4 : 1)
         .style('stroke', 'black')
         .style('stroke-width', .25);
 
@@ -140,6 +175,7 @@ export const ScatterChart = ({dimensions, data, columnNames, children}) => {
     // Redraw chart on data or dimension change
     useEffect(() => {
         if (!isNil(data) && !isNil(scatterRef.current)) {
+           
             const rootG = d3.select(scatterRef.current);
             const scatterBounds = getChartBounds(dimensions);
             const extrema = getExtrema(data);
@@ -233,7 +269,7 @@ const SPLOMBrush = ({rootG, scales, columnNames}) => {
  */
 const ProjectionBrush = ({rootG, scales, columnNames, data}) => {
     const dispatch = useDispatch();
-
+    
     // Redraw chart on data or dimension change
     useEffect(() => {
         /**
@@ -312,11 +348,15 @@ export const SPLOMScatterChart = ({data, dimensions, columnNames}) => {
  * @returns {JSX.Element}
  */
 export const ProjectionScatterChart = ({data, dimensions, columnNames}) => {
+
     return (
         <ScatterChart data={data} dimensions={dimensions} columnNames={columnNames}>
             {(rootG, scales, columnNames) => (
-                <ProjectionBrush rootG={rootG} scales={scales} columnNames={columnNames}
-                                 data={data}/>
+                <ProjectionBrush 
+                rootG={rootG} 
+                scales={scales} 
+                columnNames={columnNames}
+                data={data}/>
             )}
         </ScatterChart>
     )
