@@ -14,7 +14,7 @@ DATA_FOLDER: Path = Path(Path(__file__).parent, 'data')
 api = Flask(__name__)
 api.config['SECRET_KEY'] = environ.get('SECRET_KEY')
 projection_algorithms = {'tsne': TSNE(n_components=2).fit_transform}
-datasets = {'redwine': 'winequality-red-w-tsnse.csv'}
+datasets = {'redwine': 'winequality-red-w-tsne.csv'}
 
 
 @api.after_request
@@ -105,6 +105,28 @@ def score_predicate():
     )
     score = p.score(predicate)
     return {'score': score}
+
+@api.route('/api/score_predicates')
+def score_predicates():
+    dataset = request.args.get('dataset')
+    selected_ids = [int(x) for x in request.args.get('selected_ids').split(',')]
+    predicate_dicts = request.args.get('predicate_dicts')
+
+    data = pd.read_csv(str(Path(DATA_FOLDER, datasets[dataset])))
+    dtypes = infer_dtypes(data)
+    predicates = [Predicate(data, dtypes, **predicate_dict) for predicate_dict in predicate_dicts]
+    target = data.index.isin(selected_ids)
+    
+    f1 = F1()
+    p = PredicateInduction(
+        data, dtypes,
+        target=target,
+        score_func=f1,
+    )
+    scores = [p.score(predicate) for predicate in predicates]
+    clauses = [{k: {'min': v[0], 'max': v[1]} for k,v in predicate.attribute_values.items()} for predicate in predicates]
+    res = [{'clauses': clauses[i], 'scores': scores[i]} for i in range(len(predicates))]
+    return res
 
 if __name__ == "__main__":
     api.run(host='localhost',port=5000)
