@@ -8,7 +8,9 @@ import {getChartBounds, getExtrema} from "./common";
 import {selectAllPredicates, 
     selectSelectedPredicateId,
     updatePrepredicateSelectedIds, 
-    updateSelectedPredicateId} from "../../slices/predicateSlice";
+    updateSelectedPredicateId,
+    selectPrepredicateSelectedIds
+} from "../../slices/predicateSlice";
 import {selectSelectedPredicateOrDraft} from "../../app/commonSelectors";
 
 // How far from the axes do we start drawing points
@@ -238,7 +240,7 @@ const ProjectionBrush = ({rootG, scales, columnNames, data}) => {
     const dispatch = useDispatch();
     const predicates = useSelector(selectAllPredicates);
     const selectedPredicateId = useSelector(selectSelectedPredicateId);
-
+    
     // Redraw chart on data or dimension change
     useEffect(() => {
         /**
@@ -267,24 +269,24 @@ const ProjectionBrush = ({rootG, scales, columnNames, data}) => {
                         return d.x > selectionBounds.x.min && d.x < selectionBounds.x.max && d.y > selectionBounds.y.min && d.y < selectionBounds.y.max;
                     }).map(d => d.id);
 
-                    /* 
-                    NEED TO MOVE THIS SOMEWHERE*/
-                    if(!isNil(selectedPredicateId)){
+                    // /* 
+                    // NEED TO MOVE THIS SOMEWHERE*/
+                    // if(!isNil(selectedPredicateId)){
                         
-                        let clauseArray = Object.entries(predicates.filter(p => p.id === selectedPredicateId)[0].clauses);
-                        let fromPredicateIds = data.filter(f => {
-                            let testArray = [];
-                            clauseArray.forEach((clause)=> {
-                                if(f[clause[0]] >= clause[1].min && f[clause[0]] <= clause[1].max) testArray.push(f)
-                            })
-                            return testArray.length === clauseArray.length;
-                        }).map(m => m.id);
+                    //     let clauseArray = Object.entries(predicates.filter(p => p.id === selectedPredicateId)[0].clauses);
+                    //     let fromPredicateIds = data.filter(f => {
+                    //         let testArray = [];
+                    //         clauseArray.forEach((clause)=> {
+                    //             if(f[clause[0]] >= clause[1].min && f[clause[0]] <= clause[1].max) testArray.push(f)
+                    //         })
+                    //         return testArray.length === clauseArray.length;
+                    //     }).map(m => m.id);
 
-                        console.log('from predicate ids', fromPredicateIds);
-                        console.log('selected ids', selectedIds);
-                        console.log('in pred but not brush: ', fromPredicateIds.filter(f => selectedIds.indexOf(f) === -1));
-                        console.log('in brush but pred: ', selectedIds.filter(f => fromPredicateIds.indexOf(f) === -1));
-                    }
+                    //     console.log('from predicate ids', fromPredicateIds);
+                    //     console.log('selected ids', selectedIds);
+                    //     console.log('in pred but not brush: ', fromPredicateIds.filter(f => selectedIds.indexOf(f) === -1));
+                    //     console.log('in brush but pred: ', selectedIds.filter(f => fromPredicateIds.indexOf(f) === -1));
+                    // }
 
                     dispatch(updatePrepredicateSelectedIds(selectedIds));
                 } else {
@@ -335,13 +337,16 @@ export const SPLOMScatterChart = ({data, dimensions, columnNames}) => {
  * @param columnNames The name of the columns being displayed in this ScatterChart.
  * @returns {JSX.Element}
  */
-export const ProjectionScatterChart = ({data, selectedPredicate, dimensions, columnNames}) => {
+export const ProjectionScatterChart = ({data, dimensions, columnNames}) => {
 
     return (
         <ScatterChart data={data} dimensions={dimensions} columnNames={columnNames}>
             {(rootG, scales, columnNames) => (
-                <ProjectionBrush rootG={rootG} scales={scales} columnNames={columnNames}
-                                 data={data}/>
+                <ProjectionBrush 
+                rootG={rootG} 
+                scales={scales} 
+                columnNames={columnNames}
+                data={data}/>
             )}
         </ScatterChart>
     )

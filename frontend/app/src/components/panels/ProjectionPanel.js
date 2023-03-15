@@ -8,14 +8,14 @@ import Box from '@mui/material/Box';
  * (for easy coloring etc. later).
  * @returns {JSX.Element}
  */
-export const ProjectionPanel = ({data, selectedPredicate}) => {
+export const ProjectionPanel = ({data}) => {
     // We can hard code the column names here for now as the actual projection method doesn't _currently_ matter.
     const columnNames = {'xColumn': 'projX', 'yColumn': 'projY'};
 
     return (
         <Paper sx={{height: '90%', width: '90%', margin: 'auto', display: 'flex'}}>
             <Box sx={{margin: 'auto', height: '95%', width: '95%'}}>
-                {data && <ResponsiveProjectionScatterChart data={data} selectedPredicate={selectedPredicate} columnNames={columnNames}/>}
+                {data && <ResponsiveProjectionScatterChart data={data} columnNames={columnNames}/>}
             </Box>
         </Paper>
     );
