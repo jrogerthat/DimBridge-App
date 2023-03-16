@@ -300,16 +300,24 @@ const ProjectionBrush = ({rootG, scales, columnNames, data}) => {
 
                     dispatch(updatePrepredicateSelectedIds(selectedIds));
                 } else {
+                    console.log('brush end workin')
                     dispatch(updatePrepredicateSelectedIds(undefined));
                 }
             }
         }
 
-        const brush = d3.brush().on('end', onBrushEnd);
+        const brush = d3.brush()
+        .on('end', onBrushEnd)
+
+        function dblclicked() {
+            d3.select(this).call(brush.move, null);
+            dispatch(updatePrepredicateSelectedIds(undefined));
+          }
 
         rootG
             .select('#brush')
-            .call(brush);
+            .call(brush)
+            .on('dblclick', dblclicked);
 
     }, [rootG, columnNames, dispatch, scales, data]);
 
