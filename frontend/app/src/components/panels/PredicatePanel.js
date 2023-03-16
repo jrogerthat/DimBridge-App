@@ -84,22 +84,23 @@ const Predicate = ({predData, selected}) => {
 
     const dispatch = useDispatch();
     const clauses = Object.entries(predData.clauses);
+    const selectedPredicateId = useSelector(selectSelectedPredicateId);
 
     return (
         <div
-            className="predicate_nav"
-            style={{
-                backgroundColor: selected ? '#eeeeee' : '#FFF',
-                // borderBottom: "1px solid #D4D4D4",
-                padding: 5,
-                borderRadius: 5,
-                margin: 3,
-                display: 'flex',
-                flexDirection: 'row',
-                cursor: 'pointer',
-                border: selected ? "2px solid #D4D4D4" : "2px solid #eeeeee"
-            }}
-            onClick={() => dispatch(updateSelectedPredicateId(predData.id))}
+        className="predicate_nav" 
+        style={{
+            backgroundColor: selected ? '#eeeeee' : '#FFF',
+            // borderBottom: "1px solid #D4D4D4",
+            padding:5,
+            borderRadius:5,
+            margin:3,
+            display:'flex',
+            flexDirection:'row',
+            cursor:'pointer',
+            border: selected ? "2px solid #D4D4D4" : "2px solid #eeeeee"
+        }}
+        onClick={() => (predData.id === selectedPredicateId) ? dispatch(updateSelectedPredicateId(null)) : dispatch(updateSelectedPredicateId(predData.id))}
         >
             <div style={{width: '100%'}}>
                 <div><span style={{color: 'gray'}}>{`Predicate Score: `}</span>
