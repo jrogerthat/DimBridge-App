@@ -85,6 +85,7 @@ const Predicate = ({predData, selected}) => {
 
     const dispatch = useDispatch();
     const clauses = Object.entries(predData.clauses);
+    const selectedPredicateId = useSelector(selectSelectedPredicateId);
 
     return(
         <div
@@ -100,7 +101,7 @@ const Predicate = ({predData, selected}) => {
             cursor:'pointer',
             border: selected ? "2px solid #D4D4D4" : "2px solid #eeeeee"
         }}
-        onClick={() => dispatch(updateSelectedPredicateId(predData.id))}
+        onClick={() => (predData.id === selectedPredicateId) ? dispatch(updateSelectedPredicateId(null)) : dispatch(updateSelectedPredicateId(predData.id))}
         >
         <div style={{width:'100%'}}>
             <div><span style={{color:'gray'}}>{`Predicate Score: `}</span>
