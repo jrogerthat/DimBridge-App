@@ -71,9 +71,6 @@ const predicateSlice = createSlice({
         setDraftClause(state, action) {
             let update = state.draftClauses;
             if (!isNil(state.selectedPredicateId)) {
-                console.log(Object.entries(state.entities[state.selectedPredicateId].clauses).map(([column, range]) => {
-                    return {column: column, min: range.min, max: range.max}
-                }))
                 update = Object.entries(state.entities[state.selectedPredicateId].clauses).map(([column, range]) => {
                     return {column: column, min: range.min, max: range.max}
                 })

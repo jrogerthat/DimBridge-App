@@ -9,10 +9,10 @@ import {
     selectSelectedPredicateId,
     updateSelectedPredicateId
 } from '../../slices/predicateSlice';
-import {useLazyGetPixalPredicatesQuery} from "../../services/pixal";
+import {useGetPixalScoresQuery, useLazyGetPixalPredicatesQuery} from "../../services/pixal";
 import {isNil} from "../../utils";
 import Button from "@mui/material/Button";
-import {useEffect} from "react";
+import {useEffect, useMemo} from "react";
 
 
 /**
@@ -25,24 +25,24 @@ export const PredicatePanel = () => {
     const selectedPredicateId = useSelector(selectSelectedPredicateId);
     const clauses = useSelector(selectAllDraftClauses);
     const projectionBrushSelectedIds = useSelector(selectProjectionBrushSelectedIds);
-    // const skip = isNil(projectionSelection) || predicates.length === 0;
-    // const {data: scores, isLoading, isSuccess} = useGetPixalScoresQuery(['redwine', projectionSelection, predicates], {skip,});
+    const skip = isNil(projectionBrushSelectedIds) || predicates.length === 0;
+    const {data: scores} = useGetPixalScoresQuery(['redwine', projectionBrushSelectedIds, predicates], {skip,});
     const [trigger, {data: pixalPredicates, isFetching: pixalPredicatesFetching}] = useLazyGetPixalPredicatesQuery();
-
+    
     useEffect(() => {
         if (!isNil(pixalPredicates) && pixalPredicates.length > 0) {
             dispatch(addPixalPredicates(pixalPredicates));
         }
     }, [pixalPredicates, dispatch]);
 
-    // const scoredPredicates = useMemo(()=> {
-    //     if (!isNil(predicates) && !isNil(scores))
-    //     {
-    //         return predicates.map(d => {
-    //             return {...d, score: scores[d.id]}
-    //         })
-    //     }
-    // }, [predicates, scores]);
+    const scoredPredicates = useMemo(()=> {
+        if (!isNil(predicates) && !isNil(scores))
+        {
+            return predicates.map(d => {
+                return {...d, score: scores[d.id]}
+            })
+        }
+    }, [predicates, scores]);
 
     return (
         <Box sx={{height: '90%', width: '90%', margin: 'auto', display: 'flex', flexDirection: 'column'}}>
@@ -67,7 +67,7 @@ export const PredicatePanel = () => {
                         </div>
                     )
                 }
-                {predicates && predicates.map(d => {
+                {scoredPredicates && scoredPredicates.map(d => {
                     return (
                         <Predicate
                             key={`pred-${d.id}`}
@@ -104,7 +104,7 @@ const Predicate = ({predData, selected}) => {
         >
             <div style={{width: '100%'}}>
                 <div><span style={{color: 'gray'}}>{`Predicate Score: `}</span>
-                    <span style={{fontWeight: 800}}>{predData.score ? predData.score : "NA"}</span></div>
+                    <span style={{fontWeight: 800}}>{!isNil(predData.score) ? predData.score : "NA"}</span></div>
                 <div className='clause_wrap' style={{marginTop: 10}}>
                     {
                         clauses.map(([column, data], i) => {
