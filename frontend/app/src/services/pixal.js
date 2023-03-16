@@ -35,10 +35,15 @@ export const pixalApi = createApi({
         getPixalScores: builder.query({
             query: ([datasetName, ids, predicates]) => {
                 return {
-                    url: 'scores',
-                    params: {'dataset': datasetName, 'selected_ids': ids, 'predicates': predicates},
+                    url: 'score_predicates',
+                    method: 'POST',
+                    params: {'dataset': datasetName, 'selected_ids': ids},
+                    body: predicates,
                 };
             },
+            transformResponse(baseQueryReturnValue, meta, arg) {
+                return Object.fromEntries(baseQueryReturnValue.map(d => [d.id, d.score]))
+            }
         }),
     }),
 })

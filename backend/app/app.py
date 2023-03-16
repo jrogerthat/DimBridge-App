@@ -20,6 +20,10 @@ datasets = {'redwine': 'winequality-red-w-tsne.csv'}
 @api.after_request
 def after_request(response):
     response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', '*')
+    # response.headers.add('Access-Control-Allow-Methods', 'PUT')
+    # response.headers.add('Access-Control-Allow-Methods', 'POST')
 
     return response
 
@@ -37,22 +41,13 @@ def data(dataset=None, projection_algorithm=None):
     """
 
     dataset = request.args.get('dataset')
-    projection_algorithm = request.args.get('projection_algorithm')
 
     features = pd.read_csv(str(Path(DATA_FOLDER, datasets[dataset]))) #dataframe containing original data
     features = features.to_dict(orient='records')
-    return features
 
-    dtypes = infer_dtypes(features)
-    encoded_data = encode(features, dtypes) #one-hot encode numeric columns, date columns to numeric
-
-    projection = projection_algorithms[projection_algorithm](encoded_data).tolist() #2d list containing projection data
-    features = features.to_dict(orient='records')
     for i in range(len(features)):
         f = features[i]
         f['id'] = i
-        f['x'] = projection[i][0]
-        f['y'] = projection[i][1]
 
     return features
 
@@ -63,7 +58,8 @@ def predicate(dataset=None, projection_algorithm=None, selected_ids=None):
     projection_algorithm = request.args.get('projection_algorithm')
     selected_ids = [int(x) for x in request.args.get('selected_ids').split(',')]
 
-    df = pd.read_csv(str(Path(DATA_FOLDER, datasets[dataset]))) #dataframe containing original data
+    df = pd.read_csv(str(Path(DATA_FOLDER, datasets[dataset]))).drop(columns=['x', 'y']) #dataframe containing original data
+
     dtypes = infer_dtypes(df)
 
     binned_df = bin_numeric(df, dtypes, )
@@ -96,7 +92,7 @@ def score_predicate():
     attribute_values = {k:v for k,v in request.args.to_dict().items() if k in dtypes}
     predicate = Predicate(data, dtypes, **{k: parse_value_string(v, dtypes[k]) for k,v in attribute_values.items()})
     target = data.index.isin(selected_ids)
-    
+
     f1 = F1()
     p = PredicateInduction(
         data, dtypes,
@@ -106,15 +102,23 @@ def score_predicate():
     score = p.score(predicate)
     return {'score': score}
 
-@api.route('/api/score_predicates')
+@api.route('/api/score_predicates', methods=['POST'])
 def score_predicates():
     dataset = request.args.get('dataset')
     selected_ids = [int(x) for x in request.args.get('selected_ids').split(',')]
-    predicate_dicts = request.args.get('predicate_dicts')
+    predicate_dicts = request.get_json()
 
     data = pd.read_csv(str(Path(DATA_FOLDER, datasets[dataset])))
     dtypes = infer_dtypes(data)
-    predicates = [Predicate(data, dtypes, **predicate_dict) for predicate_dict in predicate_dicts]
+
+    for i, pred in enumerate(predicate_dicts):
+        transformed_clauses = {}
+        for c, r in pred['clauses'].items():
+            if c in dtypes:
+                transformed_clauses[c] = [r['min'], r['max']]
+        pred['clauses'] = transformed_clauses
+
+    predicates = [Predicate(data, dtypes, **predicate_dict['clauses']) for predicate_dict in predicate_dicts]
     target = data.index.isin(selected_ids)
     
     f1 = F1()
@@ -123,9 +127,10 @@ def score_predicates():
         target=target,
         score_func=f1,
     )
-    scores = [p.score(predicate) for predicate in predicates]
-    clauses = [{k: {'min': v[0], 'max': v[1]} for k,v in predicate.attribute_values.items()} for predicate in predicates]
-    res = [{'clauses': clauses[i], 'scores': scores[i]} for i in range(len(predicates))]
+
+    scores = [p.score(pred) for pred in predicates]
+    clauses = [pred['id'] for pred in predicate_dicts]
+    res = [{'id': clauses[i], 'score': scores[i]} for i in range(len(predicates))]
     return res
 
 if __name__ == "__main__":
