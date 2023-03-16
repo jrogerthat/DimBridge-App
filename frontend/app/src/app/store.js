@@ -1,6 +1,5 @@
 import {configureStore} from '@reduxjs/toolkit';
 import {pixalApi} from "../services/pixal";
-import clauseReducer from '../slices/clauseSlice';
 import predicateReducer from '../slices/predicateSlice';
 
 /**
@@ -9,9 +8,11 @@ import predicateReducer from '../slices/predicateSlice';
 export const store = configureStore({
     reducer: {
         [pixalApi.reducerPath]: pixalApi.reducer,
-        clause: clauseReducer,
         predicate: predicateReducer,
     },
     middleware: (getDefaultMiddleware) =>
-        getDefaultMiddleware().concat(pixalApi.middleware),
+        getDefaultMiddleware({
+            serializableCheck: true,
+            immutableCheck: true,
+        }).concat(pixalApi.middleware),
 });

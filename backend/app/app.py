@@ -37,22 +37,13 @@ def data(dataset=None, projection_algorithm=None):
     """
 
     dataset = request.args.get('dataset')
-    projection_algorithm = request.args.get('projection_algorithm')
 
     features = pd.read_csv(str(Path(DATA_FOLDER, datasets[dataset]))) #dataframe containing original data
     features = features.to_dict(orient='records')
-    return features
 
-    dtypes = infer_dtypes(features)
-    encoded_data = encode(features, dtypes) #one-hot encode numeric columns, date columns to numeric
-
-    projection = projection_algorithms[projection_algorithm](encoded_data).tolist() #2d list containing projection data
-    features = features.to_dict(orient='records')
     for i in range(len(features)):
         f = features[i]
         f['id'] = i
-        f['x'] = projection[i][0]
-        f['y'] = projection[i][1]
 
     return features
 
@@ -63,7 +54,8 @@ def predicate(dataset=None, projection_algorithm=None, selected_ids=None):
     projection_algorithm = request.args.get('projection_algorithm')
     selected_ids = [int(x) for x in request.args.get('selected_ids').split(',')]
 
-    df = pd.read_csv(str(Path(DATA_FOLDER, datasets[dataset]))) #dataframe containing original data
+    df = pd.read_csv(str(Path(DATA_FOLDER, datasets[dataset]))).drop(columns=['x', 'y']) #dataframe containing original data
+
     dtypes = infer_dtypes(df)
 
     binned_df = bin_numeric(df, dtypes, )

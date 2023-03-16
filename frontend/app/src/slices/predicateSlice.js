@@ -1,4 +1,5 @@
 import {createEntityAdapter, createSlice, nanoid,} from '@reduxjs/toolkit'
+import {isNil} from "../utils";
 
 /**
  * https://redux-toolkit.js.org/api/createEntityAdapter
@@ -10,7 +11,8 @@ const predicateAdapter = createEntityAdapter({
 
 const initialState = predicateAdapter.getInitialState({
     selectedPredicateId: undefined,
-    prepredicateSelectedIds: undefined,
+    projectionBrushSelectedIds: undefined,
+    draftClauses: []
 });
 
 export const transformClauseArrayToPredicate = (id, type, clausesArr) => {
@@ -32,7 +34,8 @@ const predicateSlice = createSlice({
          * Add a predicate created manually by the user.
          */
         addManualPredicate: (state, action) => {
-            predicateAdapter.addOne(state, transformClauseArrayToPredicate(nanoid(), 'manual', action.payload.clauses))
+            predicateAdapter.addOne(state, transformClauseArrayToPredicate(nanoid(), 'manual', state.draftClauses));
+            state.draftClauses = [];
         },
         /**
          * Add a predicate created manually by the user.
@@ -48,14 +51,49 @@ const predicateSlice = createSlice({
          * Update which predicate is selected.
          */
         updateSelectedPredicateId(state, action) {
+            if (!isNil(action.payload)) {
+                state.draftClauses = [];
+            } else {
+                if (!isNil(state.selectedPredicateId)) {
+                    state.draftClauses = Object.entries(state.entities[state.selectedPredicateId].clauses).map(([column, range]) => {
+                        return {column: column, min: range.min, max: range.max}
+                    })
+                }
+            }
             state.selectedPredicateId = action.payload;
         },
         /**
          * Update the projection selection.
          */
-        updatePrepredicateSelectedIds(state, action) {
-            state.prepredicateSelectedIds = action.payload;
+        updateProjectionBrushSelectedIds(state, action) {
+            state.projectionBrushSelectedIds = action.payload;
+        },
+        setDraftClause(state, action) {
+            let update = state.draftClauses;
+            if (!isNil(state.selectedPredicateId)) {
+                console.log(Object.entries(state.entities[state.selectedPredicateId].clauses).map(([column, range]) => {
+                    return {column: column, min: range.min, max: range.max}
+                }))
+                update = Object.entries(state.entities[state.selectedPredicateId].clauses).map(([column, range]) => {
+                    return {column: column, min: range.min, max: range.max}
+                })
+                state.selectedPredicateId = undefined;
+            }
+            update = update.filter(d => d.column !== action.payload.column);
+            update.push({column: action.payload.column, min: action.payload.min, max: action.payload.max})
+            state.draftClauses = update;
+        },
+        removeDraftClause(state, action) {
+            let update = state.draftClauses;
+            if (!isNil(state.selectedPredicateId)) {
+                update = Object.entries(state.entities[state.selectedPredicateId].clauses).map(([column, range]) => {
+                    return {column: column, min: range.min, max: range.max}
+                })
+                state.selectedPredicateId = undefined;
+            }
+            state.draftClauses = update.filter(d => d.column !== action.payload);
         }
+
     },
 });
 
@@ -73,10 +111,36 @@ export const selectSelectedPredicateId = (state) => {
     return state.predicate.selectedPredicateId;
 }
 
-export const selectPrepredicateSelectedIds = (state) => {
-    return state.predicate.prepredicateSelectedIds;
+export const selectProjectionBrushSelectedIds = (state) => {
+    return state.predicate.projectionBrushSelectedIds;
 }
 
-export const {addManualPredicate, removePredicate, updateSelectedPredicateId, updatePrepredicateSelectedIds, addPixalPredicates} = predicateSlice.actions;
+export const selectAllDraftClauses = (state) => {
+    return state.predicate.draftClauses;
+}
+
+/**
+ * Gets the selected predicate (if it exists). Otherwise, returns the draft predicate
+ * (clauses from clause slice).
+ * @param state
+ * @returns A predicate.
+ */
+export const selectSelectedPredicateOrDraft = (state) => {
+    const id = selectSelectedPredicateId(state);
+    if (isNil(id)) {
+        return transformClauseArrayToPredicate('draft', 'manual', selectAllDraftClauses(state))
+    }
+    return selectPredicateById(state, id);
+}
+
+export const {
+    addManualPredicate,
+    removePredicate,
+    updateSelectedPredicateId,
+    updateProjectionBrushSelectedIds,
+    addPixalPredicates,
+    setDraftClause,
+    removeDraftClause
+} = predicateSlice.actions;
 
 export default predicateSlice.reducer;

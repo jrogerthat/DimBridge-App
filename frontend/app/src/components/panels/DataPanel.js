@@ -7,8 +7,7 @@ import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import {useDispatch, useSelector} from "react-redux";
-import {removeClause, selectAllClauses} from "../../slices/clauseSlice";
-import {addManualPredicate} from "../../slices/predicateSlice";
+import {addManualPredicate, selectAllDraftClauses, selectSelectedPredicateOrDraft} from "../../slices/predicateSlice";
 import Typography from '@mui/material/Typography';
 
 // Column label size in pixels.
@@ -68,7 +67,7 @@ const pairColumnsForSPLOM = (columnNames) => {
  */
 const ControlSection = ({data, currentlyDisplayedColumns, setCurrentlyDisplayedColumns}) => {
     const dispatch = useDispatch();
-    const clauses = useSelector(selectAllClauses);
+    const clauses = useSelector(selectAllDraftClauses);
 
     const nonProjectionColumnNames = getNonProjectionColumnNames(data);
 
@@ -94,7 +93,6 @@ const ControlSection = ({data, currentlyDisplayedColumns, setCurrentlyDisplayedC
                 if (isSelectedColumnDisplayed) {
                     const temp = new Set(currentlyDisplayedColumns)
                     temp.delete(selectedColumn)
-                    dispatch(removeClause(selectedColumn));
                     setCurrentlyDisplayedColumns(temp)
                 } else {
                     const temp = currentlyDisplayedColumns.size > 0 ? new Set(currentlyDisplayedColumns).add(selectedColumn) : new Set([selectedColumn]);
@@ -159,25 +157,26 @@ const ScatterPlotMatrix = ({data, pairedSPLOMColumns}) => {
  * The data panel. Contains everything related to the data side of the DiMENsIoNAl BrIDge.
  * @param data The data to display. Currently requires just the features, and gets rid of the projection data.
  * (Projection data should be filtered out before here in the future)
- * @param selectedPredicate The currently selected predicate.
  * @returns {JSX.Element}
  */
-export const DataPanel = ({data, selectedPredicate}) => {
+export const DataPanel = ({data}) => {
     // The columns currently displayed in the data panel
     const [currentlyDisplayedColumns, setCurrentlyDisplayedColumns] = useState(new Set());
+
+    const selectedPredicate = useSelector(selectSelectedPredicateOrDraft);
 
     // We want to show all the columns the user has selected as well as any relevant
     // to the selected predicate.
     useEffect(() => {
+        const temp = new Set(currentlyDisplayedColumns);
         Object.entries(selectedPredicate.clauses).forEach(([id]) => {
-            const temp = new Set(currentlyDisplayedColumns);
             if (!currentlyDisplayedColumns.has(id)) {
                 temp.add(id);
             }
-            if (temp.size > currentlyDisplayedColumns.size) {
-                setCurrentlyDisplayedColumns(temp);
-            }
-        })
+        });
+        if (temp.size > currentlyDisplayedColumns.size) {
+            setCurrentlyDisplayedColumns(temp);
+        }
     }, [currentlyDisplayedColumns, setCurrentlyDisplayedColumns, selectedPredicate])
 
     // Pair the columns for display as a SPLOM.
