@@ -3,14 +3,13 @@ import * as d3 from 'd3';
 import {isNil} from "../../utils";
 import {withDimensions} from "../../wrappers/dimensions";
 import {useDispatch, useSelector} from "react-redux";
-import {removeClause, setClause} from "../../slices/clauseSlice";
 import {getChartBounds, getExtrema} from "./common";
-import {selectAllPredicates, 
-    updatePrepredicateSelectedIds, 
-    updateSelectedPredicateId,
-    selectPrepredicateSelectedIds
+import {
+    removeDraftClause,
+    selectSelectedPredicateOrDraft,
+    setDraftClause,
+    updateProjectionBrushSelectedIds
 } from "../../slices/predicateSlice";
-import {selectSelectedPredicateOrDraft} from "../../app/commonSelectors";
 
 // How far from the axes do we start drawing points
 const BUFFER_PROPORTION = 1 / 20;
@@ -85,33 +84,33 @@ const callAxis = (rootG,
 }
 
 const circleFill = (d) => {
-    if(d.isFiltered){
+    if (d.isFiltered) {
         return '#CF1603'; //red
-    }else if(d.intersection){
+    } else if (d.intersection) {
         return 'purple'
-    }else if(d.predNotBrush){
+    } else if (d.predNotBrush) {
         return '#CF1603'; //red;
-    }else if(d.brushNotPred){
+    } else if (d.brushNotPred) {
         return '#0371CF';
-    }else{
+    } else {
         return 'gray';
     }
 }
 
 const circleRadius = (d) => {
-    if(d.hasOwnProperty('isFiltered')){
-        if(d.isFiltered){
+    if (d.hasOwnProperty('isFiltered')) {
+        if (d.isFiltered) {
             return 2.5
-        }else{
+        } else {
             return 2
         }
-    }else if(d.hasOwnProperty('unselected')){
-        if(d.unselected){
+    } else if (d.hasOwnProperty('unselected')) {
+        if (d.unselected) {
             return 2;
-        }else{
+        } else {
             return 2.5
         }
-    }else{
+    } else {
         return 2;
     }
 }
@@ -133,7 +132,7 @@ const joinCircles = (rootG,
         .selectAll('circle')
         .data(data, d => d.id)
         .join('circle')
-        .attr('r', (d)=> circleRadius(d))
+        .attr('r', (d) => circleRadius(d))
         .attr('cx', (d) => {
             return xScale(d.x);
         })
@@ -141,7 +140,7 @@ const joinCircles = (rootG,
             return yScale(d.y);
         })
         .attr('fill', (d) => circleFill(d))
-        .attr('opacity', (d)=> d.unselected ? .4 : 1)
+        .attr('opacity', (d) => d.unselected ? .4 : 1)
         .style('stroke', 'black')
         .style('stroke-width', .25);
 
@@ -175,7 +174,7 @@ export const ScatterChart = ({dimensions, data, columnNames, children}) => {
     // Redraw chart on data or dimension change
     useEffect(() => {
         if (!isNil(data) && !isNil(scatterRef.current)) {
-           
+
             const rootG = d3.select(scatterRef.current);
             const scatterBounds = getChartBounds(dimensions);
             const extrema = getExtrema(data);
@@ -184,7 +183,6 @@ export const ScatterChart = ({dimensions, data, columnNames, children}) => {
             joinCircles(rootG, scales, data);
             setScaleState(scales);
         }
-        // If chart is unmounting remove its clause.
     }, [data, dimensions, setScaleState]);
 
     return (
@@ -221,11 +219,10 @@ const SPLOMBrush = ({rootG, scales, columnNames}) => {
                     const xPixelSpace = e.selection;
                     const xDataSpace = xPixelSpace.map(scales.xScale.invert);
                     const xClause = {'column': columnNames.xColumn, 'min': xDataSpace[0], 'max': xDataSpace[1]}
-                    dispatch(setClause(xClause));
-                    dispatch(updateSelectedPredicateId(undefined))
+                    dispatch(setDraftClause(xClause));
                 } else {
                     // Otherwise remove any clause associated with this column.
-                    dispatch(removeClause(columnNames.xColumn));
+                    dispatch(removeDraftClause(columnNames.xColumn));
                 }
             }
         }
@@ -269,7 +266,7 @@ const SPLOMBrush = ({rootG, scales, columnNames}) => {
  */
 const ProjectionBrush = ({rootG, scales, columnNames, data}) => {
     const dispatch = useDispatch();
-    
+
     // Redraw chart on data or dimension change
     useEffect(() => {
         /**
@@ -298,9 +295,9 @@ const ProjectionBrush = ({rootG, scales, columnNames, data}) => {
                         return d.x > selectionBounds.x.min && d.x < selectionBounds.x.max && d.y > selectionBounds.y.min && d.y < selectionBounds.y.max;
                     }).map(d => d.id);
 
-                    dispatch(updatePrepredicateSelectedIds(selectedIds));
+                    dispatch(updateProjectionBrushSelectedIds(selectedIds));
                 } else {
-                    dispatch(updatePrepredicateSelectedIds(undefined));
+                    dispatch(updateProjectionBrushSelectedIds(undefined));
                 }
             }
         }
@@ -352,11 +349,11 @@ export const ProjectionScatterChart = ({data, dimensions, columnNames}) => {
     return (
         <ScatterChart data={data} dimensions={dimensions} columnNames={columnNames}>
             {(rootG, scales, columnNames) => (
-                <ProjectionBrush 
-                rootG={rootG} 
-                scales={scales} 
-                columnNames={columnNames}
-                data={data}/>
+                <ProjectionBrush
+                    rootG={rootG}
+                    scales={scales}
+                    columnNames={columnNames}
+                    data={data}/>
             )}
         </ScatterChart>
     )
