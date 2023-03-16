@@ -16,6 +16,7 @@ const useTransformedData = () => {
      */
 
     const transformedData = useMemo(() => {
+        console.log('transfrom data firing', data, selectedPredicate, projectionBrushSelectedIds)
         if (!isNil(data)) {
             if (isNil(selectedPredicate)) {
                 return data;
@@ -70,7 +71,7 @@ const useTransformedData = () => {
                     isFiltered = d[col] < range.min || d[col] > range.max ? true : isFiltered;
                 })
 
-                return ({...d, isFiltered: isFiltered})
+                return ({...d, isFiltered: !isFiltered})
             })
         }
         return undefined
