@@ -17,6 +17,7 @@ const appendGroups = (selection) => {
     selection.append('g').attr('id', 'xAxisG');
     selection.append('g').attr('id', 'yAxisG');
     selection.append('g').attr('id', 'brush');
+    // selection.append('g').attr('id', 'brush-for-compare');
 }
 
 /**

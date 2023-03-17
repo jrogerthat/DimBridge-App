@@ -16,7 +16,7 @@ const useTransformedData = () => {
      */
 
     const transformedData = useMemo(() => {
-        console.log('transfrom data firing', data, selectedPredicate, projectionBrushSelectedIds)
+        
         if (!isNil(data)) {
             if (isNil(selectedPredicate)) {
                 return data;
