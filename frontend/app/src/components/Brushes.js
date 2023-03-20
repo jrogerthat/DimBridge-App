@@ -181,7 +181,6 @@ export const ProjectionBrush = ({rootG, scales, columnNames, data}) => {
     const groupTest = rootG.select('#brush-for-compare');
     const secondBrushG = groupTest.empty() ? rootG.append('g').attr('id', 'brush-for-compare') : groupTest;
 
-    console.log('TESTTTT', secondBrushG)
     // Redraw chart on data or dimension change
     useEffect(() => {
         /**
@@ -239,10 +238,10 @@ export const ProjectionBrush = ({rootG, scales, columnNames, data}) => {
 
     return (
         <React.Fragment>
-            {
+            {/* {
                 (!isNil(projectionBrushSelectedIds) && selectedPredicateId) &&  <BrushSecondary rootG={rootG} scales={scales} columnNames={columnNames} data={data}/>
-            }
-           
+            } */}
+            <BrushSecondary rootG={rootG} scales={scales} columnNames={columnNames} data={data}/>
         </React.Fragment>
     )
 }
