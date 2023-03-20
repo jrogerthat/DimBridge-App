@@ -126,7 +126,7 @@ export const selectAllDraftClauses = (state) => {
 }
 
 export const selectAllComparisonIds = (state) => {
-    return state.comparisonIds;
+    return state.predicate.comparisonIds;
 }
 
 /**
