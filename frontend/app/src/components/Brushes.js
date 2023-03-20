@@ -8,8 +8,10 @@ import {
     setDraftClause,
     updateProjectionBrushSelectedIds,
     selectProjectionBrushSelectedIds,
-    selectSelectedPredicateId
+    selectSelectedPredicateId,
+    updateComparisonIds
 } from "../slices/predicateSlice";
+
 
 
 /**
@@ -79,10 +81,7 @@ export const SPLOMBrush = ({rootG, scales, columnNames}) => {
 const BrushSecondary = ({rootG, scales, columnNames, data}) => {
     const dispatch = useDispatch();
     const projectionBrushSelectedIds = useSelector(selectProjectionBrushSelectedIds);
-    const [firstBrush, setFirstBrush] = useState(null);
-    const [secondBrush, setSecondBrush] = useState(null);
-
-    console.log('BRUSH SECONDARY');
+    
 
     useEffect(()=> {
         // console.log('second brush activated', projectionBrushSelectedIds, isNil(projectionBrushSelectedIds));
@@ -119,7 +118,7 @@ const BrushSecondary = ({rootG, scales, columnNames, data}) => {
                         return d.x > selectionBounds.x.min && d.x < selectionBounds.x.max && d.y > selectionBounds.y.min && d.y < selectionBounds.y.max;
                     }).map(d => d.id);
 
-                    // dispatch(updateProjectionBrushSelectedIds(selectedIds));
+                    dispatch(updateComparisonIds(selectedIds));
                     console.log('BRUSH IDS TO CMOPARE', selectedIds)
                 } else {
                     // dispatch(updateProjectionBrushSelectedIds(undefined));
