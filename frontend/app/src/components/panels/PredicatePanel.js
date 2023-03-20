@@ -5,6 +5,7 @@ import {
     addPixalPredicates,
     selectAllDraftClauses,
     selectAllPredicates,
+    selectAllComparisonIds,
     selectProjectionBrushSelectedIds,
     selectSelectedPredicateId,
     updateSelectedPredicateId
@@ -22,11 +23,12 @@ import {useEffect, useMemo} from "react";
 export const PredicatePanel = () => {
     const dispatch = useDispatch();
     const predicates = useSelector(selectAllPredicates);
+    const comparisonIds = useSelector(selectAllComparisonIds);
     const selectedPredicateId = useSelector(selectSelectedPredicateId);
     const clauses = useSelector(selectAllDraftClauses);
     const projectionBrushSelectedIds = useSelector(selectProjectionBrushSelectedIds);
     const skip = isNil(projectionBrushSelectedIds) || predicates.length === 0;
-    const {data: scores} = useGetPixalScoresQuery(['redwine', projectionBrushSelectedIds, predicates], {skip,});
+    const {data: scores} = useGetPixalScoresQuery(['redwine', projectionBrushSelectedIds, comparisonIds, predicates], {skip,});
     const [trigger, {data: pixalPredicates, isFetching: pixalPredicatesFetching}] = useLazyGetPixalPredicatesQuery();
     
     useEffect(() => {

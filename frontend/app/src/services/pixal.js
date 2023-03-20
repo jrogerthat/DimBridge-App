@@ -32,12 +32,25 @@ export const pixalApi = createApi({
                 };
             }
         }),
+        // getPixalScores: builder.query({
+        //     query: ([datasetName, ids, predicates]) => {
+        //         return {
+        //             url: 'score_predicates',
+        //             method: 'POST',
+        //             params: {'dataset': datasetName, 'selected_ids': ids},
+        //             body: predicates,
+        //         };
+        //     },
+        //     transformResponse(baseQueryReturnValue, meta, arg) {
+        //         return Object.fromEntries(baseQueryReturnValue.map(d => [d.id, d.score]))
+        //     }
+        // }),
         getPixalScores: builder.query({
-            query: ([datasetName, ids, predicates]) => {
+            query: ([datasetName, ids, secIds, predicates]) => {
                 return {
                     url: 'score_predicates',
                     method: 'POST',
-                    params: {'dataset': datasetName, 'selected_ids': ids},
+                    params: {'dataset': datasetName, 'selected_ids': ids, 'comparison_ids': secIds},
                     body: predicates,
                 };
             },

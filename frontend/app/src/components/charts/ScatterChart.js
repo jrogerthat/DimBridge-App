@@ -4,6 +4,10 @@ import {isNil} from "../../utils";
 import {withDimensions} from "../../wrappers/dimensions";
 import {getChartBounds, getExtrema} from "./common";
 import { SPLOMBrush, ProjectionBrush } from "../Brushes";
+import {
+    selectSelectedPredicateId
+} from '../../slices/predicateSlice';
+import {useSelector} from "react-redux";
 
 // How far from the axes do we start drawing points
 const BUFFER_PROPORTION = 1 / 20;
@@ -17,6 +21,7 @@ const appendGroups = (selection) => {
     selection.append('g').attr('id', 'xAxisG');
     selection.append('g').attr('id', 'yAxisG');
     selection.append('g').attr('id', 'brush');
+    // selection.append('g').attr('id', 'brush-for-compare');
 }
 
 /**
@@ -76,8 +81,9 @@ const callAxis = (rootG,
         .call(yAxis);
 }
 
-const circleFill = (d) => {
-    if (d.isFiltered) {
+const circleFill = (d, selectedPred) => {
+
+    if (d.isFiltered && selectedPred) {
         return '#CF1603'; //red
     } else if (d.intersection) {
         return 'purple'
@@ -118,7 +124,8 @@ const circleRadius = (d) => {
  */
 const joinCircles = (rootG,
                      {xScale, yScale},
-                     data) => {
+                     data,
+                     selectedPred) => {
     const circlesG = rootG.select('#circlesG');
 
     circlesG
@@ -132,7 +139,7 @@ const joinCircles = (rootG,
         .attr('cy', (d) => {
             return yScale(d.y);
         })
-        .attr('fill', (d) => circleFill(d))
+        .attr('fill', (d) => circleFill(d, selectedPred))
         .attr('opacity', (d) => d.unselected ? .4 : 1)
         .style('stroke', 'black')
         .style('stroke-width', .25);
@@ -154,6 +161,7 @@ const joinCircles = (rootG,
 export const ScatterChart = ({dimensions, data, columnNames, children}) => {
     const scatterRef = useRef();
     const [scaleState, setScaleState] = useState();
+    const selectedPredicateId = useSelector(selectSelectedPredicateId);
 
     // Initial setup -- this runs once.
     useEffect(() => {
@@ -173,7 +181,7 @@ export const ScatterChart = ({dimensions, data, columnNames, children}) => {
             const extrema = getExtrema(data);
             const scales = createScatterScales(extrema, scatterBounds);
             callAxis(rootG, scales, {startX: scatterBounds.startX, startY: scatterBounds.startY});
-            joinCircles(rootG, scales, data);
+            joinCircles(rootG, scales, data, selectedPredicateId);
             setScaleState(scales);
         }
     }, [data, dimensions, setScaleState]);

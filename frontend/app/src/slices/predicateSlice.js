@@ -12,6 +12,7 @@ const predicateAdapter = createEntityAdapter({
 const initialState = predicateAdapter.getInitialState({
     selectedPredicateId: undefined,
     projectionBrushSelectedIds: undefined,
+    comparisonIds:undefined,
     draftClauses: []
 });
 
@@ -68,6 +69,14 @@ const predicateSlice = createSlice({
         updateProjectionBrushSelectedIds(state, action) {
             state.projectionBrushSelectedIds = action.payload;
         },
+        /**
+         * 
+         * Update comparison ids
+         */
+        updateComparisonIds(state, action) {
+            state.comparisonIds = action.payload;
+        },
+        
         setDraftClause(state, action) {
             let update = state.draftClauses;
             if (!isNil(state.selectedPredicateId)) {
@@ -116,6 +125,10 @@ export const selectAllDraftClauses = (state) => {
     return state.predicate.draftClauses;
 }
 
+export const selectAllComparisonIds = (state) => {
+    return state.comparisonIds;
+}
+
 /**
  * Gets the selected predicate (if it exists). Otherwise, returns the draft predicate
  * (clauses from clause slice).
@@ -135,6 +148,7 @@ export const {
     removePredicate,
     updateSelectedPredicateId,
     updateProjectionBrushSelectedIds,
+    updateComparisonIds,
     addPixalPredicates,
     setDraftClause,
     removeDraftClause
