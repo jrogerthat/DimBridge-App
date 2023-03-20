@@ -7,7 +7,8 @@ import {
     selectSelectedPredicateOrDraft,
     setDraftClause,
     updateProjectionBrushSelectedIds,
-    selectProjectionBrushSelectedIds
+    selectProjectionBrushSelectedIds,
+    selectSelectedPredicateId
 } from "../slices/predicateSlice";
 
 
@@ -165,8 +166,9 @@ const BrushSecondary = ({rootG, scales, columnNames, data}) => {
 export const ProjectionBrush = ({rootG, scales, columnNames, data}) => {
     const dispatch = useDispatch();
     const projectionBrushSelectedIds = useSelector(selectProjectionBrushSelectedIds);
+    const selectedPredicateId = useSelector(selectSelectedPredicateId);
     const [firstBrush, setFirstBrush] = useState(null);
-    const [secondBrush, setSecondBrush] = useState(null);
+   
 
     const groupTest = rootG.select();
     const secondBrushG = groupTest.empty() ? rootG.append('g').attr('id', 'brush-for-compare') : groupTest;
@@ -231,7 +233,7 @@ export const ProjectionBrush = ({rootG, scales, columnNames, data}) => {
     return (
         <React.Fragment>
             {
-                !isNil(projectionBrushSelectedIds) &&  <BrushSecondary rootG={rootG} scales={scales} columnNames={columnNames} data={data}/>
+                (!isNil(projectionBrushSelectedIds) && selectedPredicateId) &&  <BrushSecondary rootG={rootG} scales={scales} columnNames={columnNames} data={data}/>
             }
            
         </React.Fragment>
