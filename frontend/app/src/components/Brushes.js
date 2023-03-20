@@ -129,8 +129,7 @@ const BrushSecondary = ({rootG, scales, columnNames, data}) => {
             }
         }
 
-        const brush = d3.brush()
-        .on('end', onBrushEnd)
+        const brush = d3.brush().keyModifiers(null).on('end', onBrushEnd)
         
         function dblclicked() {
             d3.select('#brush-for-compare').remove();//call(brush.clear);
@@ -144,6 +143,16 @@ const BrushSecondary = ({rootG, scales, columnNames, data}) => {
             .select('#brush-for-compare')
             .call(brush)
             .on('dblclick', dblclicked);
+
+            rootG
+                .select('#brush-for-compare')
+                .select(".overlay")
+                .on("mousedown.brush", (e) => {
+                    if (e.shiftKey !== true)
+                    {
+                        e.stopPropagation()
+                    }
+                })
 
         }else{
             // console.log('BRUSH GROUP!!',d3.select('#brush-for-compare'))
@@ -169,7 +178,7 @@ export const ProjectionBrush = ({rootG, scales, columnNames, data}) => {
     const [firstBrush, setFirstBrush] = useState(null);
    
 
-    const groupTest = rootG.select();
+    const groupTest = rootG.select('#brush-for-compare');
     const secondBrushG = groupTest.empty() ? rootG.append('g').attr('id', 'brush-for-compare') : groupTest;
 
     console.log('TESTTTT', secondBrushG)
@@ -208,8 +217,7 @@ export const ProjectionBrush = ({rootG, scales, columnNames, data}) => {
             }
         }
 
-        const brushMain = d3.brush()
-        .on('end', onBrushEnd)
+        const brushMain = d3.brush().keyModifiers(null).on('end', onBrushEnd)
 
         function dblclickedMain() {
             console.log('is this firing')
