@@ -25,26 +25,13 @@ export const pixalApi = createApi({
          * The predicates from pixal. Depends on the dataset name, projection algorithm, and selected points.
          */
         getPixalPredicates: builder.query({
-            query: ([datasetName, ids]) => {
+            query: ([datasetName, target_ids, comparison_ids]) => {
                 return {
                     url: 'predicates',
-                    params: {'dataset': datasetName, 'selected_ids': ids},
+                    params: {'dataset': datasetName, 'selected_ids': target_ids, 'comparison_ids': comparison_ids},
                 };
             }
         }),
-        // getPixalScores: builder.query({
-        //     query: ([datasetName, ids, predicates]) => {
-        //         return {
-        //             url: 'score_predicates',
-        //             method: 'POST',
-        //             params: {'dataset': datasetName, 'selected_ids': ids},
-        //             body: predicates,
-        //         };
-        //     },
-        //     transformResponse(baseQueryReturnValue, meta, arg) {
-        //         return Object.fromEntries(baseQueryReturnValue.map(d => [d.id, d.score]))
-        //     }
-        // }),
         getPixalScores: builder.query({
             query: ([datasetName, ids, secIds, predicates]) => {
                 return {

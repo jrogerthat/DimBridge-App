@@ -22,8 +22,6 @@ def after_request(response):
     response.headers.add('Access-Control-Allow-Origin', '*')
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
     response.headers.add('Access-Control-Allow-Methods', '*')
-    # response.headers.add('Access-Control-Allow-Methods', 'PUT')
-    # response.headers.add('Access-Control-Allow-Methods', 'POST')
 
     return response
 
@@ -53,10 +51,11 @@ def data(dataset=None, projection_algorithm=None):
 
 
 @api.route('/api/predicates')
-def predicate(dataset=None, projection_algorithm=None, selected_ids=None):
+def predicate(dataset=None, projection_algorithm=None, selected_ids=None, comparison_ids=None):
     dataset = request.args.get('dataset')
     projection_algorithm = request.args.get('projection_algorithm')
     selected_ids = [int(x) for x in request.args.get('selected_ids').split(',')]
+    comparison_ids = [int(x) for x in request.args.get('comparison_ids').split(',')] if request.args.get('comparison_ids') is not None else None
 
     df = pd.read_csv(str(Path(DATA_FOLDER, datasets[dataset]))).drop(columns=['x', 'y']) #dataframe containing original data
 
@@ -106,6 +105,7 @@ def score_predicate():
 def score_predicates():
     dataset = request.args.get('dataset')
     selected_ids = [int(x) for x in request.args.get('selected_ids').split(',')]
+    comparison_ids = [int(x) for x in request.args.get('comparison_ids').split(',')] if request.args.get('comparison_ids') is not None else None
     predicate_dicts = request.get_json()
 
     data = pd.read_csv(str(Path(DATA_FOLDER, datasets[dataset])))

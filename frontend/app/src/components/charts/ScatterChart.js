@@ -3,7 +3,7 @@ import * as d3 from 'd3';
 import {isNil} from "../../utils";
 import {withDimensions} from "../../wrappers/dimensions";
 import {getChartBounds, getExtrema} from "./common";
-import { SPLOMBrush, ProjectionBrush } from "../Brushes";
+import { SPLOMBrush, ProjectionBrushes } from "../Brushes";
 import {
     selectSelectedPredicateId
 } from '../../slices/predicateSlice';
@@ -21,7 +21,7 @@ const appendGroups = (selection) => {
     selection.append('g').attr('id', 'xAxisG');
     selection.append('g').attr('id', 'yAxisG');
     selection.append('g').attr('id', 'brush');
-    // selection.append('g').attr('id', 'brush-for-compare');
+    selection.append('g').attr('id', 'brush-for-compare');
 }
 
 /**
@@ -168,6 +168,8 @@ export const ScatterChart = ({dimensions, data, columnNames, children}) => {
         // This if statement _should_ never fail
         if (!isNil(scatterRef.current)) {
             const rootG = d3.select(scatterRef.current);
+            rootG.selectAll("*").remove();
+
             appendGroups(rootG);
         }
     }, []);
@@ -224,7 +226,7 @@ export const ProjectionScatterChart = ({data, dimensions, columnNames}) => {
     return (
         <ScatterChart data={data} dimensions={dimensions} columnNames={columnNames}>
             {(rootG, scales, columnNames) => (
-                <ProjectionBrush
+                <ProjectionBrushes
                     rootG={rootG}
                     scales={scales}
                     columnNames={columnNames}
