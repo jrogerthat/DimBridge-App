@@ -57,7 +57,7 @@ export const PredicatePanel = () => {
             }}>
                 <Button variant={"outlined"} disabled={isNil(projectionBrushSelectedIds) || pixalPredicatesFetching}
                         sx={{width: '60%', marginTop: 'auto', marginBottom: 'auto'}} onClick={() => {
-                    trigger(['redwine', projectionBrushSelectedIds]);
+                    trigger(['redwine', projectionBrushSelectedIds, comparisonIds]);
                 }
                 }>Get Predicates</Button>
             </Paper>

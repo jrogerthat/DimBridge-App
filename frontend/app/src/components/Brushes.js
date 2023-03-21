@@ -7,10 +7,9 @@ import {
     selectSelectedPredicateOrDraft,
     setDraftClause,
     updateProjectionBrushSelectedIds,
-    selectProjectionBrushSelectedIds,
-    selectSelectedPredicateId,
     updateComparisonIds
 } from "../slices/predicateSlice";
+import {useKeyPress} from "../hooks/useKeyPress";
 
 
 
@@ -78,171 +77,90 @@ export const SPLOMBrush = ({rootG, scales, columnNames}) => {
     )
 }
 
-const BrushSecondary = ({rootG, scales, columnNames, data}) => {
-    const dispatch = useDispatch();
-    const projectionBrushSelectedIds = useSelector(selectProjectionBrushSelectedIds);
-    
 
-    useEffect(()=> {
-        // console.log('second brush activated', projectionBrushSelectedIds, isNil(projectionBrushSelectedIds));
-        if(!isNil(projectionBrushSelectedIds)){
-            
+const brushSelectionToIds = (pixelSpaceBounds, scales, data) => {
+    // y min and max should be swapped no?
+    const dataSpaceBounds = {
+        'x': {
+            'min': scales.xScale.invert(pixelSpaceBounds[0][0]),
+            'max': scales.xScale.invert(pixelSpaceBounds[1][0])
+        },
+        'y': {
+            'min': scales.yScale.invert(pixelSpaceBounds[1][1]),
+            'max': scales.yScale.invert(pixelSpaceBounds[0][1])
+        }
+    };
 
-            /**
-         * On brush end add a clause to the current predicate.
-         * @param e The event.
-         */
-        const onBrushEnd = (e) => {
-            if (!isNil(e) && !isNil(e.sourceEvent)) {
+    return data.filter(d => {
+        return d.x > dataSpaceBounds.x.min && d.x < dataSpaceBounds.x.max && d.y > dataSpaceBounds.y.min && d.y < dataSpaceBounds.y.max;
+    }).map(d => d.id);
+}
 
-                console.log('e.selection',e.selection, e.sourceEvent);
-                if (!isNil(e.selection)) {
-
-                    console.log('e.selection',e.selection)
-                    // If there is a valid selection add its clause.
-                    const pixelSpace = e.selection;
-
-                    // y min and max should be swapped no?
-                    const selectionBounds = {
-                        'x': {
-                            'min': scales.xScale.invert(pixelSpace[0][0]),
-                            'max': scales.xScale.invert(pixelSpace[1][0])
-                        },
-                        'y': {
-                            'min': scales.yScale.invert(pixelSpace[1][1]),
-                            'max': scales.yScale.invert(pixelSpace[0][1])
-                        }
-                    };
-
-                    const selectedIds = data.filter(d => {
-                        return d.x > selectionBounds.x.min && d.x < selectionBounds.x.max && d.y > selectionBounds.y.min && d.y < selectionBounds.y.max;
-                    }).map(d => d.id);
-
-                    dispatch(updateComparisonIds(selectedIds));
-                    console.log('BRUSH IDS TO CMOPARE', selectedIds)
-                } else {
-                    // dispatch(updateProjectionBrushSelectedIds(undefined));
-                    console.log('NULL BRUSH');
-                    // d3.select('#brush-for-compare').call(brush.clear);
-                    // d3.select('#brush').call(d3.brush().clear);
-                }
+const onBrushEndFactory = (dispatch, methodToDispatch, scales, data) => {
+    return (e) => {
+        if (!isNil(e) && !isNil(e.sourceEvent)) {
+            if (!isNil(e.selection)) {
+                dispatch(methodToDispatch(brushSelectionToIds(e.selection, scales, data)));
+            } else {
+                dispatch(methodToDispatch(undefined));
             }
         }
-
-        const brush = d3.brush().keyModifiers(null).on('end', onBrushEnd)
-        
-        function dblclicked() {
-            d3.select('#brush-for-compare').remove();//call(brush.clear);
-            d3.select('#brush').call(d3.brush().clear);
-            console.log('DOUBLE CLICK');
-            dispatch(updateProjectionBrushSelectedIds(undefined));
-        }
-
-        console.log('test', d3.select('#brush-for-compare'))
-        rootG
-            .select('#brush-for-compare')
-            .call(brush)
-            .on('dblclick', dblclicked);
-
-            rootG
-                .select('#brush-for-compare')
-                .select(".overlay")
-                .on("mousedown.brush", (e) => {
-                    if (e.shiftKey !== true)
-                    {
-                        e.stopPropagation()
-                    }
-                })
-
-        }else{
-            // console.log('BRUSH GROUP!!',d3.select('#brush-for-compare'))
-            // console.log('first Brush',firstBrush)
-            // d3.select('#brush-for-compare').style('pointer-events', 'none')//.call(d3.brush().clear)
-            // d3.select('#brush-for-compare').selectAll('*').remove();
-            
-        }
-    }, [projectionBrushSelectedIds])
+    }
 }
+
 /**
  * Brush set up for the projection scatter interactions.
  *
  * @param rootG The group to find the brushG on.
  * @param scales The scales necessary for the brush.
  * @param columnNames The columns/axes of the brush.
+ * @param data The full data displayed.
  * @returns {JSX.Element}
  */
-export const ProjectionBrush = ({rootG, scales, columnNames, data}) => {
+export const ProjectionBrushes = ({rootG, scales, columnNames, data}) => {
     const dispatch = useDispatch();
-    const projectionBrushSelectedIds = useSelector(selectProjectionBrushSelectedIds);
-    const selectedPredicateId = useSelector(selectSelectedPredicateId);
-    const [firstBrush, setFirstBrush] = useState(null);
-   
-
-    const groupTest = rootG.select('#brush-for-compare');
-    const secondBrushG = groupTest.empty() ? rootG.append('g').attr('id', 'brush-for-compare') : groupTest;
+    const shiftPress = useKeyPress("Shift");
 
     // Redraw chart on data or dimension change
     useEffect(() => {
-        /**
-         * On brush end add a clause to the current predicate.
-         * @param e The event.
-         */
-        const onBrushEnd = (e) => {
-            if (!isNil(e) && !isNil(e.sourceEvent)) {
-                if (!isNil(e.selection)) {
-                    // If there is a valid selection add its clause.
-                    const pixelSpace = e.selection;
 
-                    // y min and max should be swapped no?
-                    const selectionBounds = {
-                        'x': {
-                            'min': scales.xScale.invert(pixelSpace[0][0]),
-                            'max': scales.xScale.invert(pixelSpace[1][0])
-                        },
-                        'y': {
-                            'min': scales.yScale.invert(pixelSpace[1][1]),
-                            'max': scales.yScale.invert(pixelSpace[0][1])
-                        }
-                    };
+        const onBrushEndTarget = onBrushEndFactory(dispatch, updateProjectionBrushSelectedIds, scales, data);
+        const onBrushEndReference = onBrushEndFactory(dispatch, updateComparisonIds, scales, data);
 
-                    const selectedIds = data.filter(d => {
-                        return d.x > selectionBounds.x.min && d.x < selectionBounds.x.max && d.y > selectionBounds.y.min && d.y < selectionBounds.y.max;
-                    }).map(d => d.id);
+        const brushTargetG = d3.select('#brush');
+        const brushReferenceG = d3.select('#brush-for-compare');
+        const targetBrush = d3.brush().keyModifiers(null).on('end', onBrushEndTarget);
+        const referenceBrush = d3.brush().keyModifiers(null).on('end', onBrushEndReference);
 
-                    dispatch(updateProjectionBrushSelectedIds(selectedIds));
-                } else {
-                    dispatch(updateProjectionBrushSelectedIds(undefined));
-                }
-            }
+        const dblclicked = () => {
+            brushTargetG.call(targetBrush.clear);
+            brushReferenceG.call(referenceBrush.clear);
+            dispatch(updateProjectionBrushSelectedIds(undefined));
         }
 
-        const brushMain = d3.brush().keyModifiers(null).on('end', onBrushEnd)
+        brushTargetG.on('dblclick', dblclicked);
+        brushReferenceG.on('dblclick', dblclicked);
 
-        function dblclickedMain() {
-            console.log('is this firing')
-            d3.select('#brush').call(brushMain.clear);
-            d3.select('#brush-for-compare').call(d3.brush().clear);
-            dispatch(updateProjectionBrushSelectedIds(undefined));
-          }
-
-        rootG
-            .select('#brush')
-            .call(brushMain)
-            .on('dblclick', dblclickedMain);
-
-        setFirstBrush(rootG.select('#brush'));
-
+        brushTargetG.call(targetBrush).select('.selection').attr('fill', 'pink');
+        brushReferenceG.call(targetBrush).select('.selection').attr('fill', 'orange');
 
     }, [rootG, columnNames, dispatch, scales, data]);
 
+    useEffect(() => {
+        if (shiftPress)
+        {
+            d3.select('#brush-for-compare').raise();
+        }
+        else
+        {
+            d3.select('#brush').raise();
+        }
+    }, [shiftPress])
+
 
     return (
-        <React.Fragment>
-            {/* {
-                (!isNil(projectionBrushSelectedIds) && selectedPredicateId) &&  <BrushSecondary rootG={rootG} scales={scales} columnNames={columnNames} data={data}/>
-            } */}
-            <BrushSecondary rootG={rootG} scales={scales} columnNames={columnNames} data={data}/>
-        </React.Fragment>
+        <>
+        </>
     )
 }
 
