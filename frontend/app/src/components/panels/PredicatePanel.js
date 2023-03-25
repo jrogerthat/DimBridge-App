@@ -61,7 +61,7 @@ export const PredicatePanel = () => {
                 }
                 }>Get Predicates</Button>
             </Paper>
-            <Paper sx={{height: '80%', width: '100%', marginTop: '5%'}}>
+            <Paper sx={{height: '80%', width: '100%', marginTop: '5%', overflowY: 'scroll'}}>
                 {
                     clauses.length > 0 && (
                         <div>

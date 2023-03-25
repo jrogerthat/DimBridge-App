@@ -29,7 +29,7 @@ const cartesian =
  * @returns {string[]} The column names that aren't x or y.
  */
 const getNonProjectionColumnNames = (data) => {
-    const {x, y, id, ...rest} = data[0];
+    const {x, y, id, isFiltered, intersection, predNotBrush, brushNotPred, unselected, ...rest} = data[0];
     return Object.keys(rest);
 }
 
