@@ -2,6 +2,7 @@ import uuid
 
 from os import environ
 from pathlib import Path
+import json
 
 from flask import Flask, request
 import pandas as pd
@@ -14,7 +15,7 @@ DATA_FOLDER: Path = Path(Path(__file__).parent, 'data')
 api = Flask(__name__)
 api.config['SECRET_KEY'] = environ.get('SECRET_KEY')
 projection_algorithms = {'tsne': TSNE(n_components=2).fit_transform}
-datasets = {'redwine': 'winequality-red-w-tsne.csv'}
+datasets = {'redwine': 'winequality-red-w-tsne.csv', 'countries': 'countries.csv', 'property': 'melbourne_property_w_umap.csv'}
 
 
 @api.after_request
@@ -39,14 +40,12 @@ def data(dataset=None, projection_algorithm=None):
     """
 
     dataset = request.args.get('dataset')
-
     features = pd.read_csv(str(Path(DATA_FOLDER, datasets[dataset]))) #dataframe containing original data
     features = features.to_dict(orient='records')
 
     for i in range(len(features)):
         f = features[i]
         f['id'] = i
-
     return features
 
 
@@ -58,10 +57,12 @@ def predicate(dataset=None, projection_algorithm=None, selected_ids=None, compar
     comparison_ids = [int(x) for x in request.args.get('comparison_ids').split(',')] if request.args.get('comparison_ids') is not None else None
 
     df = pd.read_csv(str(Path(DATA_FOLDER, datasets[dataset]))).drop(columns=['x', 'y']) #dataframe containing original data
-
     dtypes = infer_dtypes(df)
+    # data['Date'] = pd.to_datetime(data['Date'])
+    # dtypes = {col: 'numeric' for col in data.columns}
+    # dtypes['Date'] = 'date'
 
-    binned_df = bin_numeric(df, dtypes, )
+    binned_df = bin_numeric(df, dtypes)
     target = df.index.isin(selected_ids).astype(int)
     attribute_predicates, indices = data_to_predicates(binned_df, df, dtypes)
     f1 = F1()
@@ -72,13 +73,25 @@ def predicate(dataset=None, projection_algorithm=None, selected_ids=None, compar
         attribute_predicates=attribute_predicates,
     )
 
-    a = {k: list(v.unique()) for k,v in indices[target==1].to_dict('series').items()}
-    predicates = [x for y in [unique([attribute_predicates[k][i] for i in indices[k]]) for k,v in a.items()] for x in y]
-    p.search(predicates if not p.started_search else None, max_accepted=1, max_steps=None, max_clauses=3, breadth_first=False)
-    predicate = p.last_accepted
+    # a = {k: list(v.unique()) for k,v in indices[target==1].to_dict('series').items()}
+    # predicates = [x for y in [unique([attribute_predicates[k][i] for i in indices[k]]) for k,v in a.items()] for x in y]
+    # p.search(predicates if not p.started_search else None, max_accepted=1, max_steps=None, max_clauses=3, breadth_first=False)
+    # predicate = p.last_accepted
 
-    clauses = {k: {'min': v[0], 'max': v[1]} for k,v in predicate.attribute_values.items()}
-    return [{'id': uuid.uuid4(), 'type': 'pixal', 'clauses': clauses, 'score': p.score(predicate)}]
+    # clauses = {k: {'min': v[0], 'max': v[1]} for k,v in predicate.attribute_values.items()}
+    # return [{'id': uuid.uuid4(), 'type': 'pixal', 'clauses': clauses, 'score': p.score(predicate)}]
+
+    with open(Path(DATA_FOLDER, 'countries_predicates.json'), 'r') as f:
+        predicate_dicts = list(json.load(f).values())
+    # with open(Path(DATA_FOLDER, 'melbourn_property_predicates.json'), 'r') as f:
+    #     predicate_dicts = list(json.load(f).values())
+
+    predicates = [Predicate(df, dtypes, attribute_values=predicate_dict) for predicate_dict in predicate_dicts[:6]]
+    # predicates = [Predicate(df, dtypes, attribute_values=predicate_dict) for predicate_dict in [predicate_dicts[2]]]
+    predicates = sorted(predicates, key=lambda x: len(x.predicate_attributes))
+
+    print(predicates)
+    return [{'id': uuid.uuid4(), 'type': 'pixal', 'clauses': {k: {'min': v[0], 'max': v[1]} for k,v in predicates[i].attribute_values.items()}, 'score': p.score(predicates[i])} for i in range(len(predicates))]
     # return [{'id': uuid.uuid4(), 'clauses': [{'column': 'pH', 'min': 3.37, 'max': 3.38}]}]
 
 @api.route('/api/score_predicate')
@@ -90,7 +103,7 @@ def score_predicate():
     dtypes = infer_dtypes(data)
     attribute_values = {k:v for k,v in request.args.to_dict().items() if k in dtypes}
     predicate = Predicate(data, dtypes, **{k: parse_value_string(v, dtypes[k]) for k,v in attribute_values.items()})
-    target = data.index.isin(selected_ids)
+    target = pd.Series(data.index.isin(selected_ids))
 
     f1 = F1()
     p = PredicateInduction(
@@ -110,6 +123,9 @@ def score_predicates():
 
     data = pd.read_csv(str(Path(DATA_FOLDER, datasets[dataset])))
     dtypes = infer_dtypes(data)
+    # data['Date'] = pd.to_datetime(data['Date'])
+    # dtypes = {col: 'numeric' for col in data.columns}
+    # dtypes['Date'] = 'date'
 
     for i, pred in enumerate(predicate_dicts):
         transformed_clauses = {}
@@ -119,12 +135,15 @@ def score_predicates():
         pred['clauses'] = transformed_clauses
 
     predicates = [Predicate(data, dtypes, **predicate_dict['clauses']) for predicate_dict in predicate_dicts]
-    target = data.index.isin(selected_ids)
+    target = pd.Series(data.index.isin(selected_ids))
+
+    print(predicates)
     
+    mask = pd.Series(data.index**0).astype(bool) if comparison_ids is None else target | data.index.isin(comparison_ids)
     f1 = F1()
     p = PredicateInduction(
-        data, dtypes,
-        target=target,
+        data.loc[mask.values].reset_index(drop=True), dtypes,
+        target=target.loc[mask.values].reset_index(drop=True),
         score_func=f1,
     )
 

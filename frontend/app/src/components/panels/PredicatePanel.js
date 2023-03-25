@@ -28,7 +28,8 @@ export const PredicatePanel = () => {
     const clauses = useSelector(selectAllDraftClauses);
     const projectionBrushSelectedIds = useSelector(selectProjectionBrushSelectedIds);
     const skip = isNil(projectionBrushSelectedIds) || predicates.length === 0;
-    const {data: scores} = useGetPixalScoresQuery(['redwine', projectionBrushSelectedIds, comparisonIds, predicates], {skip,});
+    // const {data: scores} = useGetPixalScoresQuery(['redwine', projectionBrushSelectedIds, comparisonIds, predicates], {skip,});
+    const {data: scores} = useGetPixalScoresQuery(['countries', projectionBrushSelectedIds, comparisonIds, predicates], {skip,});
     const [trigger, {data: pixalPredicates, isFetching: pixalPredicatesFetching}] = useLazyGetPixalPredicatesQuery();
     
     useEffect(() => {
@@ -57,7 +58,8 @@ export const PredicatePanel = () => {
             }}>
                 <Button variant={"outlined"} disabled={isNil(projectionBrushSelectedIds) || pixalPredicatesFetching}
                         sx={{width: '60%', marginTop: 'auto', marginBottom: 'auto'}} onClick={() => {
-                    trigger(['redwine', projectionBrushSelectedIds, comparisonIds]);
+                    trigger(['countries', projectionBrushSelectedIds, comparisonIds]);
+                    // trigger(['redwine', projectionBrushSelectedIds, comparisonIds]);
                 }
                 }>Get Predicates</Button>
             </Paper>
