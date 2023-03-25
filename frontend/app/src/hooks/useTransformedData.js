@@ -8,7 +8,7 @@ import {isNil} from "../utils";
 const useTransformedData = () => {
     // Can assume that it won't refetch during the lifetime of the app
     // const {data, isLoading, isSuccess} = useGetDataQuery(['redwine', 'tsne']);
-    const {data, isLoading, isSuccess} = useGetDataQuery(['countries', 'tsne']);
+    const {data, isLoading, isSuccess} = useGetDataQuery(['genes', 'tsne']);
     const selectedPredicate = useSelector(selectSelectedPredicateOrDraft);
     const projectionBrushSelectedIds = useSelector(selectProjectionBrushSelectedIds);
 
