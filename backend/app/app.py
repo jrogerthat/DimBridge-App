@@ -1,10 +1,8 @@
 import uuid
-
 from os import environ
 from pathlib import Path
 import json
 import time
-
 from flask import Flask, request
 import pandas as pd
 from sklearn.manifold import TSNE
@@ -16,9 +14,9 @@ DATA_FOLDER: Path = Path(Path(__file__).parent, 'data')
 api = Flask(__name__)
 api.config['SECRET_KEY'] = environ.get('SECRET_KEY')
 projection_algorithms = {'tsne': TSNE(n_components=2).fit_transform}
-datasets = {'redwine': 'winequality-red-w-tsne.csv', 'countries': 'countries.csv', 'property': 'melbourne_property_w_umap.csv', 'genes': 'gene_data.csv'}
+datasets = {'redwine': 'winequality-red-w-tsne.csv', 'countries': 'countries.csv', 'property': 'melbourne_property_w_umap.csv', 'genes': 'gene_data.csv', 'gene2':'test_genes.csv'}
 
-
+# 'winequality-red-w-tsne.csv'
 @api.after_request
 def after_request(response):
     response.headers.add('Access-Control-Allow-Origin', '*')
@@ -41,14 +39,17 @@ def data(dataset=None, projection_algorithm=None):
     """
 
     dataset = request.args.get('dataset')
+
     features = pd.read_csv(str(Path(DATA_FOLDER, datasets[dataset]))) #dataframe containing original data
-
+    print('features in data',features)
     # features = features.sample(1000, random_state=5345435)
-    features = features.to_dict(orient='records')
 
-    for i in range(len(features)):
-        f = features[i]
-        f['id'] = i
+
+    # features = features.to_dict(orient='records')
+
+    # for i in range(len(features)):
+    #     f = features[i]
+    #     f['id'] = i
     return features
 
 

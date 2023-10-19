@@ -15,6 +15,7 @@ export const pixalApi = createApi({
          */
         getData: builder.query({
             query: ([datasetName, projectionAlgorithm]) => {
+                console.log("get data in pixal api", datasetName, projectionAlgorithm)
                 return {
                     url: 'data',
                     params: {'dataset': datasetName, 'projection_algorithm': projectionAlgorithm},
